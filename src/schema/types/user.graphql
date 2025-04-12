@@ -1,0 +1,59 @@
+type User {
+  id: ID!
+  email: String!
+  name: String
+  role: String!
+  createdAt: String!
+  updatedAt: String!
+  boilerplates: [Boilerplate!]!
+  likedBoilerplates: [Boilerplate!]!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+type UserConnection {
+  edges: [UserEdge!]!
+  pageInfo: PageInfo!
+}
+
+type UserEdge {
+  node: User!
+  cursor: String!
+}
+
+extend type Query {
+  me: User @auth
+  user(id: ID!): User @auth
+  users(first: Int, after: String): UserConnection @auth @hasRole(role: "ADMIN")
+}
+
+extend type Mutation {
+  signup(input: SignupInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+  updateProfile(input: UpdateProfileInput!): User! @auth
+  changePassword(input: ChangePasswordInput!): SuccessResponse! @auth
+}
+
+input SignupInput {
+  email: String!
+  password: String!
+  name: String
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input UpdateProfileInput {
+  name: String
+  email: String
+}
+
+input ChangePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+}

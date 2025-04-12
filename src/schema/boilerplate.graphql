@@ -1,0 +1,67 @@
+type Boilerplate {
+  id: ID!
+  title: String!
+  description: String!
+  repositoryUrl: String!
+  author: User!
+  authorId: String!
+  tags: [Tag!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Tag {
+  id: ID!
+  name: String!
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  avatar: String
+}
+
+type Query {
+  boilerplate(id: ID!): Boilerplate
+  boilerplates(skip: Int, take: Int, where: BoilerplateWhereInput, orderBy: BoilerplateOrderByInput): [Boilerplate!]!
+}
+
+type Mutation {
+  createBoilerplate(data: CreateBoilerplateInput!): Boilerplate!
+  updateBoilerplate(id: ID!, data: UpdateBoilerplateInput!): Boilerplate!
+  deleteBoilerplate(id: ID!): Boolean!
+}
+
+input BoilerplateWhereInput {
+  title: String
+  description: String
+  authorId: String
+  tags: [String!]
+}
+
+input BoilerplateOrderByInput {
+  title: Sort
+  createdAt: Sort
+  updatedAt: Sort
+}
+
+enum Sort {
+  asc
+  desc
+}
+
+input CreateBoilerplateInput {
+  title: String!
+  description: String!
+  repositoryUrl: String!
+  authorId: String!
+  tags: [String!]
+}
+
+input UpdateBoilerplateInput {
+  title: String
+  description: String
+  repositoryUrl: String
+  tags: [String!]
+}
