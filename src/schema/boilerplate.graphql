@@ -20,6 +20,15 @@ type User {
   name: String!
   email: String!
   avatar: String
+  role: String!
+}
+
+type AuthPayload {
+  id: ID!
+  email: String!
+  name: String!
+  role: String!
+  token: String!
 }
 
 type Query {
@@ -31,6 +40,9 @@ type Mutation {
   createBoilerplate(data: CreateBoilerplateInput!): Boilerplate!
   updateBoilerplate(id: ID!, data: UpdateBoilerplateInput!): Boilerplate!
   deleteBoilerplate(id: ID!): Boolean!
+  login(email: String!, password: String!): AuthPayload!
+  signup(name: String!, email: String!, password: String!): AuthPayload!
+  createUser(input: CreateUserInput!): User!
 }
 
 input BoilerplateWhereInput {
@@ -64,4 +76,11 @@ input UpdateBoilerplateInput {
   description: String
   repositoryUrl: String
   tags: [String!]
+}
+
+input CreateUserInput {
+  email: String!
+  password: String!
+  name: String
+  role: String
 }

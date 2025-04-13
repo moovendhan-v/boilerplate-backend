@@ -8,54 +8,51 @@ generator client {
 }
 
 model Boilerplate {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  description String
-  tags        String[]
-  framework   String
-  language    String
-  stars       Int      @default(0)
-  downloads   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  authorId    String   @db.ObjectId
-  author      User     @relation(fields: [authorId], references: [id])
-  files       File[]
-}
-
-model File {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
-  path          String
-  content       String
-  type          String
-  boilerplateId String     @db.ObjectId
-  boilerplate   Boilerplate @relation(fields: [boilerplateId], references: [id])
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id            String     @id @default(cuid()) @map("_id")
+  title         String
+  description   String
+  repositoryUrl String
+  framework     String
+  language      String
+  tags          String[]
+  stars         Int       @default(0)
+  downloads     Int       @default(0)
+  author        User      @relation("UserBoilerplates", fields: [authorId], references: [id])
+  authorId      String
+  likes         UserLikes[]
+  files         File[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model User {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
-  email       String       @unique
-  password    String
-  name        String?
-  avatar      String?
-  role        String       @default("user")
-  boilerplates Boilerplate[]
-  codeFiles   CodeFile[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id                String        @id @default(cuid()) @map("_id")
+  email            String        @unique
+  password         String
+  name             String?
+  role             String        @default("USER")
+  boilerplates     Boilerplate[] @relation("UserBoilerplates")
+  likes            UserLikes[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 
-model CodeFile {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  projectName String
-  fileName    String
-  fileType    String
-  content     String
-  userId      String   @db.ObjectId
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model UserLikes {
+  id            String      @id @default(cuid()) @map("_id")
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  boilerplate   Boilerplate @relation(fields: [boilerplateId], references: [id])
+  boilerplateId String
+  createdAt     DateTime    @default(now())
+
+  @@unique([userId, boilerplateId])
+}
+
+model File {
+  id            String      @id @default(cuid()) @map("_id")
+  name          String
+  path          String
+  content       String
+  boilerplate   Boilerplate @relation(fields: [boilerplateId], references: [id])
+  boilerplateId String
 }

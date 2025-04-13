@@ -32,6 +32,7 @@ extend type Query {
 
 extend type Mutation {
   signup(input: SignupInput!): AuthPayload!
+  createUser(input: CreateUserInput!): AuthPayload!
   login(input: LoginInput!): AuthPayload!
   updateProfile(input: UpdateProfileInput!): User! @auth
   changePassword(input: ChangePasswordInput!): SuccessResponse! @auth
@@ -41,6 +42,13 @@ input SignupInput {
   email: String!
   password: String!
   name: String
+}
+
+input CreateUserInput {
+  email: String!
+  password: String!
+  name: String
+  role: String
 }
 
 input LoginInput {

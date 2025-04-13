@@ -14,8 +14,5 @@ function loadSchemaFiles(dir: string): string {
 const typesDir = join(__dirname, 'types');
 const typeDefs = loadSchemaFiles(typesDir);
 
-// Create and export the executable schema
-export const schema = makeExecutableSchema({
-  typeDefs,
-  // Resolvers will be merged separately
-});
+// Export typeDefs as default
+export default typeDefs;
