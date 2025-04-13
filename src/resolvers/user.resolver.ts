@@ -1,6 +1,7 @@
 import { UserService } from '../services/user.service';
 import { GraphQLError } from 'graphql';
 import { Context } from '../types/context';
+import logger from '../utils/logger';
 
 interface SignupInput {
   email: string;
@@ -35,19 +36,36 @@ const userService = new UserService();
 export const userResolvers = {
   Query: {
     me: async (_: any, __: any, { user }: Context) => {
-      if (!user) throw new GraphQLError('Not authenticated', {
-        extensions: { code: 'UNAUTHENTICATED' }
-      });
+      logger.info('[User Resolver] Fetching current user', { userId: user?.id });
+      if (!user) {
+        logger.warn('[User Resolver] Unauthenticated access attempt');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' }
+        });
+      }
       return await userService.findUserById(user.id);
     },
     user: async (_: any, { id }: { id: string }, { user }: Context) => {
-      if (!user) throw new GraphQLError('Not authenticated', {
-        extensions: { code: 'UNAUTHENTICATED' }
-      });
+      logger.info('[User Resolver] Fetching user by ID', { requestedId: id, requesterId: user?.id });
+      if (!user) {
+        logger.warn('[User Resolver] Unauthenticated access attempt');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' }
+        });
+      }
       return await userService.findUserById(id);
     },
     users: async (_: any, { first, after }: { first: number; after?: string }, { user }: Context) => {
+      logger.info('[User Resolver] Fetching users list', { 
+        requesterId: user?.id,
+        requesterRole: user?.role,
+        pagination: { first, after }
+      });
       if (!user || user.role !== 'ADMIN') {
+        logger.warn('[User Resolver] Unauthorized access attempt', { 
+          userId: user?.id,
+          role: user?.role 
+        });
         throw new GraphQLError('Not authorized', {
           extensions: { code: 'FORBIDDEN' }
         });
@@ -58,49 +76,68 @@ export const userResolvers = {
 
   Mutation: {
     signup: async (_: any, { input }: { input: SignupInput }) => {
-      console.log('Signup attempt for user:', input.email);
+      logger.info('[User Resolver] Signup attempt', { email: input.email });
       const result = await userService.signup(input);
-      console.log('Signup successful for user:', input.email);
+      logger.info('[User Resolver] Signup successful', { 
+        userId: result.user.id,
+        email: input.email 
+      });
       return result;
     },
     createUser: async (_: any, { input }: { input: CreateUserInput }) => {
-      console.log('Create user attempt:', {
+      logger.info('[User Resolver] Create user attempt', {
         email: input.email,
         name: input.name,
         role: input.role || 'USER'
       });
       const result = await userService.createUser(input);
-      console.log('User created successfully:', {
-        id: result.user.id,
+      logger.info('[User Resolver] User created successfully', {
+        userId: result.user.id,
         email: result.user.email
       });
       return result;
     },
     login: async (_: any, { input }: { input: LoginInput }) => {
-      console.log('Login attempt for user:', input.email);
+      logger.info('[User Resolver] Login attempt', { email: input.email });
       const result = await userService.login(input);
-      console.log('Login successful for user:', input.email);
+      logger.info('[User Resolver] Login successful', { 
+        userId: result.user.id,
+        email: input.email 
+      });
       return result;
     },
     updateProfile: async (_: any, { input }: { input: UpdateProfileInput }, { user }: Context) => {
-      if (!user) throw new GraphQLError('Not authenticated', {
-        extensions: { code: 'UNAUTHENTICATED' }
+      logger.info('[User Resolver] Profile update attempt', { 
+        userId: user?.id,
+        updates: input 
       });
+      if (!user) {
+        logger.warn('[User Resolver] Unauthenticated profile update attempt');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' }
+        });
+      }
       return await userService.updateProfile(user.id, input);
     },
     changePassword: async (_: any, { input }: { input: ChangePasswordInput }, { user }: Context) => {
-      if (!user) throw new GraphQLError('Not authenticated', {
-        extensions: { code: 'UNAUTHENTICATED' }
-      });
+      logger.info('[User Resolver] Password change attempt', { userId: user?.id });
+      if (!user) {
+        logger.warn('[User Resolver] Unauthenticated password change attempt');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' }
+        });
+      }
       return await userService.changePassword(user.id, input);
     },
   },
 
   User: {
     boilerplates: async (parent: { id: string }) => {
+      logger.info('[User Resolver] Fetching user boilerplates', { userId: parent.id });
       return await userService.getUserBoilerplates(parent.id);
     },
     likedBoilerplates: async (parent: { id: string }) => {
+      logger.info('[User Resolver] Fetching user liked boilerplates', { userId: parent.id });
       return await userService.getLikedBoilerplates(parent.id);
     },
   },

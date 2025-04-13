@@ -1,96 +1,118 @@
 import { BoilerplateService } from '../services/boilerplate.service';
 import { GraphQLError } from 'graphql';
 import { Context } from '../types/context';
+import logger from '../utils/logger';
+import { Prisma } from '@prisma/client';
 
 interface BoilerplateInput {
   title: string;
   description: string;
   repositoryUrl: string;
-  framework: string;
-  language: string;
-  tags: string[];
-  files: FileInput[];
-}
-
-interface FileInput {
-  name: string;
-  path: string;
-  content: string;
-  type: string;
+  tags?: string[];
 }
 
 interface BoilerplateWhereInput {
   title?: string;
   description?: string;
-  framework?: string;
-  language?: string;
-  tags?: string[];
   authorId?: string;
+  tags?: string[];
 }
 
 interface BoilerplateOrderByInput {
   title?: 'asc' | 'desc';
-  stars?: 'asc' | 'desc';
-  downloads?: 'asc' | 'desc';
   createdAt?: 'asc' | 'desc';
   updatedAt?: 'asc' | 'desc';
 }
+
+type BoilerplateWithAuthor = Prisma.BoilerplateGetPayload<{
+  include: { author: true }
+}>;
 
 const boilerplateService = new BoilerplateService();
 
 export const boilerplateResolvers = {
   Query: {
     boilerplate: async (_: any, { id }: { id: string }) => {
+      logger.info('[Boilerplate Resolver] Fetching boilerplate', { id });
       return await boilerplateService.findBoilerplateById(id);
     },
-    boilerplates: async (_: any, { first, after, where, orderBy }: {
-      first?: number;
-      after?: string;
+    boilerplates: async (_: any, { skip, take, where, orderBy }: {
+      skip?: number;
+      take?: number;
       where?: BoilerplateWhereInput;
       orderBy?: BoilerplateOrderByInput;
     }) => {
-      return await boilerplateService.findBoilerplates({ first, after, where, orderBy });
+      logger.info('[Boilerplate Resolver] Fetching boilerplates', { 
+        pagination: { skip, take },
+        filters: where,
+        orderBy 
+      });
+      return await boilerplateService.findBoilerplates({ skip, take, where, orderBy });
     },
   },
   Mutation: {
     createBoilerplate: async (_: any, { data }: { data: BoilerplateInput }, { user }: Context) => {
-      if (!user) throw new GraphQLError('Not authenticated', {
-        extensions: { code: 'UNAUTHENTICATED' }
+      logger.info('[Boilerplate Resolver] Create boilerplate attempt', { 
+        userId: user?.id,
+        data: { ...data, tags: data.tags?.length }
       });
+
+      if (!user) {
+        logger.warn('[Boilerplate Resolver] Unauthenticated create attempt');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' }
+        });
+      }
+
       return await boilerplateService.createBoilerplate({ ...data, authorId: user.id });
     },
     updateBoilerplate: async (_: any, { id, data }: { id: string, data: Partial<BoilerplateInput> }, { user }: Context) => {
-      if (!user) throw new GraphQLError('Not authenticated', {
-        extensions: { code: 'UNAUTHENTICATED' }
+      logger.info('[Boilerplate Resolver] Update boilerplate attempt', { 
+        userId: user?.id,
+        boilerplateId: id,
+        updates: { ...data, tags: data.tags?.length }
       });
-      return await boilerplateService.updateBoilerplate(id, data, user.id);
+
+      if (!user) {
+        logger.warn('[Boilerplate Resolver] Unauthenticated update attempt');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' }
+        });
+      }
+
+      return await boilerplateService.updateBoilerplate(id, data);
     },
     deleteBoilerplate: async (_: any, { id }: { id: string }, { user }: Context) => {
-      if (!user) throw new GraphQLError('Not authenticated', {
-        extensions: { code: 'UNAUTHENTICATED' }
+      logger.info('[Boilerplate Resolver] Delete boilerplate attempt', { 
+        userId: user?.id,
+        boilerplateId: id 
       });
-      await boilerplateService.deleteBoilerplate(id, user.id);
+
+      if (!user) {
+        logger.warn('[Boilerplate Resolver] Unauthenticated delete attempt');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' }
+        });
+      }
+
+      await boilerplateService.deleteBoilerplate(id);
       return true;
-    },
-    likeBoilerplate: async (_: any, { id }: { id: string }, { user }: Context) => {
-      if (!user) throw new GraphQLError('Not authenticated', {
-        extensions: { code: 'UNAUTHENTICATED' }
-      });
-      return await boilerplateService.likeBoilerplate(id, user.id);
-    },
-    unlikeBoilerplate: async (_: any, { id }: { id: string }, { user }: Context) => {
-      if (!user) throw new GraphQLError('Not authenticated', {
-        extensions: { code: 'UNAUTHENTICATED' }
-      });
-      return await boilerplateService.unlikeBoilerplate(id, user.id);
-    },
+    }
   },
   Boilerplate: {
-    author: async (parent: { authorId: string }) => {
-      return await boilerplateService.getBoilerplateAuthor(parent.authorId);
+    author: async (parent: BoilerplateWithAuthor) => {
+      logger.info('[Boilerplate Resolver] Fetching boilerplate author', { 
+        boilerplateId: parent.id,
+        authorId: parent.authorId 
+      });
+      const boilerplate = await boilerplateService.findBoilerplateById(parent.id);
+      return boilerplate?.authorId;
     },
-    likedBy: async (parent: { id: string }) => {
-      return await boilerplateService.getBoilerplateLikedBy(parent.id);
-    },
-  },
+    tags: async (parent: BoilerplateWithAuthor) => {
+      logger.info('[Boilerplate Resolver] Fetching boilerplate tags', { 
+        boilerplateId: parent.id 
+      });
+      return parent.tags;
+    }
+  }
 };

@@ -13,6 +13,8 @@ import { json } from 'body-parser';
 import { PrismaClient } from '@prisma/client';
 import resolvers from './resolvers';
 import typeDefs from './schema';
+import { authenticate, requireAuth } from './middleware/auth.middleware';
+import logger from './utils/logger';
 
 // Initialize Redis client
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
@@ -67,32 +69,37 @@ const serverCleanup = useServer(
   wsServer
 );
 
-
 // Start server
 async function startServer() {
   await server.start();
 
+  // Apply middleware
+  app.use(cors<cors.CorsRequest>());
+  app.use(json());
+  app.use(authenticate);
+
+  // GraphQL endpoint with authentication
   app.use(
     '/graphql',
-    cors<cors.CorsRequest>(),
-    json(),
     expressMiddleware(server, {
-      context: async ({ req }) => ({
-        prisma,
-        redis,
-        pubsub,
-        token: req.headers.authorization,
-      }),
+      context: async ({ req }) => {
+        return {
+          prisma,
+          redis,
+          pubsub,
+          user: req.user,
+        };
+      },
     })
   );
 
   const PORT = process.env.PORT || 4000;
   httpServer.listen(PORT, () => {
-    console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
-    console.log(`🚀 WebSocket server ready at ws://localhost:${PORT}/graphql`);
+    logger.info(`🚀 Server ready at http://localhost:${PORT}/graphql`);
+    logger.info(`🚀 WebSocket server ready at ws://localhost:${PORT}/graphql`);
   });
 }
 
 startServer().catch((err) => {
-  console.error('Error starting server:', err);
+  logger.error('Error starting server:', err);
 });
