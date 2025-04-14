@@ -73,8 +73,13 @@ const serverCleanup = useServer(
 async function startServer() {
   await server.start();
 
-  // Apply middleware
-  app.use(cors<cors.CorsRequest>());
+  const corsOptions = {
+    origin: 'http://localhost:8080',
+    credentials: true,
+  };
+
+  // Apply middleware with updated CORS configuration
+  app.use(cors(corsOptions));
   app.use(json());
   app.use(authenticate);
 

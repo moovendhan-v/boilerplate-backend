@@ -14,7 +14,13 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors());
+const corsOptions = {
+  origin: 'http://localhost:8080',
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
 
 // Request parsing
 app.use(express.json());

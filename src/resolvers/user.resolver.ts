@@ -86,19 +86,19 @@ export const userResolvers = {
       });
       return result;
     },
-    createUser: async (_: any, { input }: { input: CreateUserInput }) => {
-      logger.info('[User Resolver] Create user attempt', {
-        email: input.email,
-        name: input.name,
-        role: input.role || 'USER'
-      });
-      const result = await authService.signup(input);
-      logger.info('[User Resolver] User created successfully', {
-        userId: result.user.id,
-        email: result.user.email
-      });
-      return result;
-    },
+    // createUser: async (_: any, { input }: { input: CreateUserInput }) => {
+    //   logger.info('[User Resolver] Create user attempt', {
+    //     email: input.email,
+    //     name: input.name,
+    //     role: input.role || 'USER'
+    //   });
+    //   const result = await authService.signup(input);
+    //   logger.info('[User Resolver] User created successfully', {
+    //     userId: result.user.id,
+    //     email: result.user.email
+    //   });
+    //   return result;
+    // },
     login: async (_: any, { input }: { input: LoginInput }) => {
       logger.info('[User Resolver] Login attempt', { email: input.email });
       const result = await userService.login(input);

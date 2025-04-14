@@ -30,14 +30,17 @@ export async function createApolloServer(app: express.Application) {
   // Start the server
   await server.start();
 
-  // Apply middleware
+  const corsOptions = {
+    origin: 'http://localhost:8080',
+    credentials: true,
+  };
+  
   app.use(
     '/graphql',
-    cors<cors.CorsRequest>(),
+    cors(corsOptions),
     json(),
     expressMiddleware(server, {
       context: async ({ req }) => ({
-        // Add any context you need here
         token: req.headers.authorization,
       }),
     }),
