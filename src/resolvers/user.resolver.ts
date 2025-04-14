@@ -1,4 +1,5 @@
 import { UserService } from '../services/user.service';
+import { AuthService } from '../services/auth.service';
 import { GraphQLError } from 'graphql';
 import { Context } from '../types/context';
 import logger from '../utils/logger';
@@ -32,6 +33,7 @@ interface ChangePasswordInput {
 }
 
 const userService = new UserService();
+const authService = new AuthService();
 
 export const userResolvers = {
   Query: {
@@ -90,7 +92,7 @@ export const userResolvers = {
         name: input.name,
         role: input.role || 'USER'
       });
-      const result = await userService.createUser(input);
+      const result = await authService.signup(input);
       logger.info('[User Resolver] User created successfully', {
         userId: result.user.id,
         email: result.user.email

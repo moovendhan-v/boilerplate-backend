@@ -20,7 +20,6 @@ export class UserService {
       cursor: after ? { id: after } : undefined,
     });
   }
-
   async signup(data: { email: string; password: string; name?: string }) {
     const existingUser = await this.findUserByEmail(data.email);
     if (existingUser) {

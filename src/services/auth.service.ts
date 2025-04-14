@@ -1,5 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import { PrismaClient, Prisma } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import { GraphQLError } from 'graphql';
 import * as jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
@@ -32,23 +33,47 @@ export class AuthService {
     };
   }
 
-  async register(data: {
-    email: string;
-    password: string;
-    name?: string;
-  }) {
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    const user = await prisma.user.create({
-      data: {
-        ...data,
-        password: hashedPassword
+  async signup(data: { email: string; password: string; name?: string }) {
+    try {
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+      const user = await prisma.user.create({
+        data: {
+          ...data,
+          password: hashedPassword,
+          role: 'USER',
+        },
+      });
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
+      return { token, user };
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError && 
+        error.code === 'P2002' &&
+        Array.isArray(error.meta?.target) &&
+        error.meta.target.includes('email')
+      ) {
+        throw new GraphQLError('Email already exists', {
+          extensions: { code: 'BAD_USER_INPUT' },
+        });
       }
-    });
-
-    const { password: _, ...result } = user;
-    return result;
+      // Re-throw other errors
+      if (error instanceof Error) {
+        throw new GraphQLError(error.message, {
+          extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
+      }
+      throw new GraphQLError('An unexpected error occurred', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' },
+      });
+    }
   }
-
+  
+  private async findUserByEmail(email: string) {
+    return prisma.user.findUnique({
+      where: { email }
+    });
+  }
+  
   verifyToken(token: string) {
     try {
       return jwt.verify(token, JWT_SECRET);
