@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
+import { HttpStatus, ErrorCode, createError, AppError } from '../utils/errors';
 
 export class AuthController {
   private authService: AuthService;
@@ -13,13 +14,26 @@ export class AuthController {
       const { email, password } = req.body;
       const user = await this.authService.validateUser(email, password);
       if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+        throw createError(
+          'Invalid credentials',
+          HttpStatus.UNAUTHORIZED,
+          ErrorCode.UNAUTHORIZED
+        );
       }
 
       const result = await this.authService.login(user);
       res.json(result);
-    } catch (error) {
-      res.status(500).json({ message: 'Internal server error' });
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json(error.toJSON());
+      }
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(
+        createError(
+          'Internal server error',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          ErrorCode.INTERNAL_SERVER_ERROR
+        ).toJSON()
+      );
     }
   }
 
@@ -27,12 +41,24 @@ export class AuthController {
     try {
       const { email, password, name } = req.body;
       const user = await this.authService.register({ email, password, name });
-      res.status(201).json(user);
-    } catch (error) {
-      if (error.code === 'P2002') {
-        return res.status(409).json({ message: 'Email already exists' });
+      res.status(HttpStatus.CREATED).json(user);
+    } catch (error: unknown) {
+      if (error instanceof Error && 'code' in error && error.code === 'P2002') {
+        return res.status(HttpStatus.CONFLICT).json(
+          createError(
+            'Email already exists',
+            HttpStatus.CONFLICT,
+            ErrorCode.CONFLICT
+          ).toJSON()
+        );
       }
-      res.status(500).json({ message: 'Internal server error' });
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(
+        createError(
+          'Internal server error',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          ErrorCode.INTERNAL_SERVER_ERROR
+        ).toJSON()
+      );
     }
   }
 
@@ -40,17 +66,34 @@ export class AuthController {
     try {
       const token = req.headers.authorization?.split(' ')[1];
       if (!token) {
-        return res.status(401).json({ message: 'No token provided' });
+        throw createError(
+          'No token provided',
+          HttpStatus.UNAUTHORIZED,
+          ErrorCode.UNAUTHORIZED
+        );
       }
 
       const decoded = this.authService.verifyToken(token);
       if (!decoded) {
-        return res.status(401).json({ message: 'Invalid token' });
+        throw createError(
+          'Invalid token',
+          HttpStatus.UNAUTHORIZED,
+          ErrorCode.UNAUTHORIZED
+        );
       }
 
       res.json(decoded);
-    } catch (error) {
-      res.status(500).json({ message: 'Internal server error' });
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json(error.toJSON());
+      }
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(
+        createError(
+          'Internal server error',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          ErrorCode.INTERNAL_SERVER_ERROR
+        ).toJSON()
+      );
     }
   }
 }

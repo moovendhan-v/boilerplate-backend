@@ -30,6 +30,8 @@
     "mongoose": "^8.13.2",
     "morgan": "^1.10.0",
     "prisma": "^6.6.0",
+    "reflect-metadata": "^0.2.2",
+    "type-graphql": "^2.0.0-rc.2",
     "winston": "^3.17.0",
     "ws": "^8.16.0"
   },

@@ -1,69 +1,149 @@
-import { Request, Response } from 'express';
 import { BoilerplateService } from '../services/boilerplate.service';
+import { Context } from '../types/context';
+import { Prisma } from '@prisma/client';
+import { HttpStatus, ErrorCode, createError } from '../utils/errors';
+
+interface BoilerplateInput {
+  title: string;
+  description: string;
+  repositoryUrl: string;
+  framework: string;
+  language: string;
+  tags?: string[];
+}
+
+interface BoilerplateWhereInput {
+  title?: string;
+  description?: string;
+  authorId?: string;
+  tags?: string[];
+}
+
+interface BoilerplateOrderByInput {
+  title?: 'asc' | 'desc';
+  createdAt?: 'asc' | 'desc';
+  updatedAt?: 'asc' | 'desc';
+}
+
+type BoilerplateWithAuthor = Prisma.BoilerplateGetPayload<{
+  include: { author: true }
+}>;
 
 export class BoilerplateController {
-  private boilerplateService: BoilerplateService;
+  private service: BoilerplateService;
 
   constructor() {
-    this.boilerplateService = new BoilerplateService();
+    this.service = new BoilerplateService();
   }
 
-  async getBoilerplate(req: Request, res: Response) {
+  async getBoilerplate(id: string) {
+    const boilerplate = await this.service.findBoilerplateById(id);
+    if (!boilerplate) {
+      throw createError(
+        'Boilerplate not found',
+        HttpStatus.NOT_FOUND,
+        ErrorCode.NOT_FOUND,
+        { resourceId: id }
+      ).toGraphQLError();
+    }
+    return boilerplate;
+  }
+
+  async getBoilerplates(params: {
+    skip?: number;
+    take?: number;
+    where?: BoilerplateWhereInput;
+    orderBy?: BoilerplateOrderByInput;
+  }) {
+    return await this.service.findBoilerplates(params);
+  }
+
+  async createBoilerplate(data: BoilerplateInput, user: Context['user']) {
+    if (!user) {
+      throw createError(
+        'Not authenticated',
+        HttpStatus.UNAUTHORIZED,
+        ErrorCode.UNAUTHORIZED
+      ).toGraphQLError();
+    }
+
     try {
-      const boilerplateId = req.params.id;
-      const boilerplate = await this.boilerplateService.findBoilerplateById(boilerplateId);
-      if (!boilerplate) {
-        return res.status(404).json({ message: 'Boilerplate not found' });
+      return await this.service.createBoilerplate({ ...data, authorId: user.id });
+    } catch (error: any) {
+      throw createError(
+        'Failed to create boilerplate',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        ErrorCode.INTERNAL_SERVER_ERROR,
+        { userId: user.id, details: error.message }
+      ).toGraphQLError();
+    }
+  }
+
+  async updateBoilerplate(id: string, data: Partial<BoilerplateInput>, user: Context['user']) {
+    if (!user) {
+      throw createError(
+        'Not authenticated',
+        HttpStatus.UNAUTHORIZED,
+        ErrorCode.UNAUTHORIZED
+      ).toGraphQLError();
+    }
+
+    try {
+      return await this.service.updateBoilerplate(id, data);
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        throw createError(
+          'Boilerplate not found',
+          HttpStatus.NOT_FOUND,
+          ErrorCode.NOT_FOUND,
+          { resourceId: id, userId: user.id }
+        ).toGraphQLError();
       }
-      res.json(boilerplate);
-    } catch (error) {
-      res.status(500).json({ message: 'Internal server error' });
+      throw createError(
+        'Failed to update boilerplate',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        ErrorCode.INTERNAL_SERVER_ERROR,
+        { resourceId: id, userId: user.id, details: error.message }
+      ).toGraphQLError();
     }
   }
 
-  async listBoilerplates(req: Request, res: Response) {
+  async deleteBoilerplate(id: string, user: Context['user']) {
+    if (!user) {
+      throw createError(
+        'Not authenticated',
+        HttpStatus.UNAUTHORIZED,
+        ErrorCode.UNAUTHORIZED
+      ).toGraphQLError();
+    }
+
     try {
-      const { skip, take, where, orderBy } = req.query;
-      const boilerplates = await this.boilerplateService.findBoilerplates({
-        skip: skip ? parseInt(skip as string) : undefined,
-        take: take ? parseInt(take as string) : undefined,
-        where: where ? JSON.parse(where as string) : undefined,
-        orderBy: orderBy ? JSON.parse(orderBy as string) : undefined
-      });
-      res.json(boilerplates);
-    } catch (error) {
-      res.status(500).json({ message: 'Internal server error' });
+      await this.service.deleteBoilerplate(id);
+      return true;
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        throw createError(
+          'Boilerplate not found',
+          HttpStatus.NOT_FOUND,
+          ErrorCode.NOT_FOUND,
+          { resourceId: id, userId: user.id }
+        ).toGraphQLError();
+      }
+      throw createError(
+        'Failed to delete boilerplate',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        ErrorCode.INTERNAL_SERVER_ERROR,
+        { resourceId: id, userId: user.id, details: error.message }
+      ).toGraphQLError();
     }
   }
 
-  async createBoilerplate(req: Request, res: Response) {
-    try {
-      const boilerplateData = req.body;
-      const boilerplate = await this.boilerplateService.createBoilerplate(boilerplateData);
-      res.status(201).json(boilerplate);
-    } catch (error) {
-      res.status(500).json({ message: 'Internal server error' });
-    }
+  async getAuthor(parent: BoilerplateWithAuthor) {
+    return parent.author;
   }
 
-  async updateBoilerplate(req: Request, res: Response) {
-    try {
-      const boilerplateId = req.params.id;
-      const updateData = req.body;
-      const boilerplate = await this.boilerplateService.updateBoilerplate(boilerplateId, updateData);
-      res.json(boilerplate);
-    } catch (error) {
-      res.status(500).json({ message: 'Internal server error' });
-    }
+  async getTags(parent: BoilerplateWithAuthor) {
+    return parent.tags;
   }
-
-  async deleteBoilerplate(req: Request, res: Response) {
-    try {
-      const boilerplateId = req.params.id;
-      await this.boilerplateService.deleteBoilerplate(boilerplateId);
-      res.status(204).send();
-    } catch (error) {
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  }
+}
 }
