@@ -131,6 +131,47 @@ export const userResolvers = {
       }
       return await userService.changePassword(user.id, input);
     },
+    refreshToken: async (_: any, __: any, context: Context) => {
+      logger.info('[User Resolver] Token refresh attempt');
+
+      const { req } = context;
+      const refreshToken = req?.cookies?.refreshToken;
+      
+      if (!refreshToken) {
+        logger.warn('[User Resolver] Refresh token missing in cookies');
+        throw new GraphQLError('Refresh token not found', {
+          extensions: { code: 'UNAUTHORIZED' },
+        });
+      }
+
+      try {
+        const result = await authService.refreshToken(refreshToken);
+        logger.info('[User Resolver] Token refresh successful');
+        return result;
+      } catch (error) {
+        logger.error('[User Resolver] Token refresh failed', { error });
+        throw error;
+      }
+    },
+
+    logout: async (_: any, __: any, { user, res }: Context) => {
+      logger.info('[User Resolver] Logout attempt', { userId: user?.id });
+      
+      if (!user || !res) {
+        logger.warn('[User Resolver] Unauthenticated logout attempt');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
+
+      await authService.logout(user.id, res);
+      logger.info('[User Resolver] Logout successful', { userId: user.id });
+      
+      return {
+        success: true,
+        message: 'Successfully logged out'
+      };
+    },
   },
 
   User: {

@@ -36,6 +36,17 @@ extend type Mutation {
   login(input: LoginInput!): AuthPayload!
   updateProfile(input: UpdateProfileInput!): User! @auth
   changePassword(input: ChangePasswordInput!): SuccessResponse! @auth
+  refreshToken: TokenResponse!
+  logout: LogoutResponse! @auth
+}
+
+type TokenResponse {
+  access_token: String!
+}
+
+type LogoutResponse {
+  success: Boolean!
+  message: String
 }
 
 input SignupInput {

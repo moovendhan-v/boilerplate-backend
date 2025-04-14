@@ -52,6 +52,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         role: decoded.role
       };
 
+      logger.info('[Auth Middleware] User attached to request', {
+        user: req.user
+      })
+
       next();
     } catch (error) {
       logger.warn('[Auth Middleware] Invalid token', { error });
