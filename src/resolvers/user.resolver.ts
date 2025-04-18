@@ -37,7 +37,8 @@ const authService = new AuthService();
 
 export const userResolvers = {
   Query: {
-    me: async (_: any, __: any, { user }: Context) => {
+    me: async (_: any, __: any, context: Context) => {
+      const { user } = context;
       logger.info('[User Resolver] Fetching current user', { userId: user?.id });
       if (!user) {
         logger.warn('[User Resolver] Unauthenticated access attempt');
@@ -47,7 +48,8 @@ export const userResolvers = {
       }
       return await userService.findUserById(user.id);
     },
-    user: async (_: any, { id }: { id: string }, { user }: Context) => {
+    user: async (_: any, { id }: { id: string }, context: Context) => {
+      const { user } = context;
       logger.info('[User Resolver] Fetching user by ID', { requestedId: id, requesterId: user?.id });
       if (!user) {
         logger.warn('[User Resolver] Unauthenticated access attempt');
@@ -57,7 +59,8 @@ export const userResolvers = {
       }
       return await userService.findUserById(id);
     },
-    users: async (_: any, { first, after }: { first: number; after?: string }, { user }: Context) => {
+    users: async (_: any, { first, after }: { first: number; after?: string }, context: Context) => {
+      const { user } = context;
       logger.info('[User Resolver] Fetching users list', { 
         requesterId: user?.id,
         requesterRole: user?.role,
@@ -86,19 +89,6 @@ export const userResolvers = {
       });
       return result;
     },
-    // createUser: async (_: any, { input }: { input: CreateUserInput }) => {
-    //   logger.info('[User Resolver] Create user attempt', {
-    //     email: input.email,
-    //     name: input.name,
-    //     role: input.role || 'USER'
-    //   });
-    //   const result = await authService.signup(input);
-    //   logger.info('[User Resolver] User created successfully', {
-    //     userId: result.user.id,
-    //     email: result.user.email
-    //   });
-    //   return result;
-    // },
     login: async (_: any, { input }: { input: LoginInput }) => {
       logger.info('[User Resolver] Login attempt', { email: input.email });
       const result = await userService.login(input);
@@ -108,7 +98,8 @@ export const userResolvers = {
       });
       return result;
     },
-    updateProfile: async (_: any, { input }: { input: UpdateProfileInput }, { user }: Context) => {
+    updateProfile: async (_: any, { input }: { input: UpdateProfileInput }, context: Context) => {
+      const { user } = context;
       logger.info('[User Resolver] Profile update attempt', { 
         userId: user?.id,
         updates: input 
@@ -121,7 +112,8 @@ export const userResolvers = {
       }
       return await userService.updateProfile(user.id, input);
     },
-    changePassword: async (_: any, { input }: { input: ChangePasswordInput }, { user }: Context) => {
+    changePassword: async (_: any, { input }: { input: ChangePasswordInput }, context: Context) => {
+      const { user } = context;
       logger.info('[User Resolver] Password change attempt', { userId: user?.id });
       if (!user) {
         logger.warn('[User Resolver] Unauthenticated password change attempt');
@@ -153,8 +145,8 @@ export const userResolvers = {
         throw error;
       }
     },
-
-    logout: async (_: any, __: any, { user, res }: Context) => {
+    logout: async (_: any, __: any, context: Context) => {
+      const { user, res } = context;
       logger.info('[User Resolver] Logout attempt', { userId: user?.id });
       
       if (!user || !res) {

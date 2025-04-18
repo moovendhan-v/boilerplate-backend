@@ -3,16 +3,24 @@ type Boilerplate {
   title: String!
   description: String!
   repositoryUrl: String!
+  framework: String!
+  language: String!
+  tags: [String!]!
+  stars: Int!
+  downloads: Int!
   author: User!
   authorId: String!
-  tags: [Tag!]!
+  files: [File!]!
   createdAt: String!
   updatedAt: String!
+  likedBy: [User!]!
 }
 
-type Tag {
-  id: ID!
+type File {
   name: String!
+  path: String!
+  content: String!
+  type: String!
 }
 
 type User {
@@ -33,27 +41,65 @@ type AuthPayload {
 
 type Query {
   boilerplate(id: ID!): Boilerplate
-  boilerplates(skip: Int, take: Int, where: BoilerplateWhereInput, orderBy: BoilerplateOrderByInput): [Boilerplate!]!
+  
+  # Keep the original cursor-based pagination
+  boilerplates(
+    first: Int
+    after: String
+    where: BoilerplateWhereInput
+    orderBy: BoilerplateOrderByInput
+  ): BoilerplateConnection!
+  
+  # Add offset-based pagination as an alternative query
+  allBoilerplates(
+    skip: Int
+    take: Int
+    where: BoilerplateWhereInput
+    orderBy: BoilerplateOrderByInput
+  ): [Boilerplate!]!
+}
+
+# Cursor-based pagination types
+type BoilerplateConnection {
+  edges: [BoilerplateEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type BoilerplateEdge {
+  node: Boilerplate!
+  cursor: String!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  endCursor: String
 }
 
 type Mutation {
-  createBoilerplate(data: CreateBoilerplateInput!): Boilerplate!
-  updateBoilerplate(id: ID!, data: UpdateBoilerplateInput!): Boilerplate!
-  deleteBoilerplate(id: ID!): Boolean!
-  login(email: String!, password: String!): AuthPayload!
-  signup(name: String!, email: String!, password: String!): AuthPayload!
-  createUser(input: CreateUserInput!): User!
+  createBoilerplate(data: CreateBoilerplateInput!): Boilerplate! @auth
+  updateBoilerplate(id: ID!, data: UpdateBoilerplateInput!): Boilerplate! @auth
+  deleteBoilerplate(id: ID!): Boolean! @auth
+  likeBoilerplate(id: ID!): Boilerplate! @auth
+  unlikeBoilerplate(id: ID!): Boilerplate! @auth
+  login(input: LoginInput!): AuthPayload!
+  signup(input: SignupInput!): AuthPayload!
+  createUser(input: CreateUserInput!): AuthPayload!
 }
 
 input BoilerplateWhereInput {
   title: String
   description: String
-  authorId: String
+  framework: String
+  language: String
   tags: [String!]
+  authorId: String
 }
 
 input BoilerplateOrderByInput {
   title: Sort
+  stars: Sort
+  downloads: Sort
   createdAt: Sort
   updatedAt: Sort
 }
@@ -67,15 +113,34 @@ input CreateBoilerplateInput {
   title: String!
   description: String!
   repositoryUrl: String!
-  authorId: String!
-  tags: [String!]
+  framework: String!
+  language: String!
+  tags: [String!]!
+  files: [FileInput!]!
 }
 
 input UpdateBoilerplateInput {
   title: String
   description: String
   repositoryUrl: String
+  framework: String
+  language: String
   tags: [String!]
+  files: [FileInput!]
+}
+
+input FileInput {
+  name: String!
+  path: String!
+  content: String!
+  type: String!
+}
+
+directive @auth on FIELD_DEFINITION
+
+input LoginInput {
+  email: String!
+  password: String!
 }
 
 input CreateUserInput {
@@ -83,4 +148,10 @@ input CreateUserInput {
   password: String!
   name: String
   role: String
+}
+
+input SignupInput {
+  name: String!
+  email: String!
+  password: String!
 }

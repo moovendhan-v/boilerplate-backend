@@ -51,7 +51,7 @@ type LogoutResponse {
 
 input SignupInput {
   email: String!
-  password: String!
+  password: String
   name: String
 }
 

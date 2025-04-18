@@ -18,14 +18,37 @@ import path from 'path';
 import logger from './utils/logger';
 import cookieParser from 'cookie-parser';
 import { authenticate } from './middleware/auth.middleware';
+import { validateSchema } from 'graphql';
 
 // Import resolvers
 import { boilerplateResolvers } from './resolvers/boilerplate.resolver';
-// Merge resolvers
+import { userResolvers } from './resolvers/user.resolver';
+
+// Merge resolvers properly
 const resolvers = {
-  ...boilerplateResolvers,
-  // Add other resolvers here
+  Query: {
+    ...(boilerplateResolvers.Query || {}),
+    ...(userResolvers.Query || {}),
+  },
+  Mutation: {
+    ...(boilerplateResolvers.Mutation || {}),
+    ...(userResolvers.Mutation || {}),
+  },
+  // Add resolver types
+  Boilerplate: boilerplateResolvers.Boilerplate,
+  User: userResolvers.User,
+  // Add other types as needed
 };
+
+// Debug function to log resolver structure
+function logResolverKeys(resolvers: Record<string, any>) {
+  for (const typeName in resolvers) {
+    console.log(`Resolver type: ${typeName}`);
+    if (typeof resolvers[typeName] === 'object') {
+      console.log(`  Fields: ${Object.keys(resolvers[typeName]).join(', ')}`);
+    }
+  }
+}
 
 async function startServer() {
   // Initialize clients
@@ -38,6 +61,10 @@ async function startServer() {
   const httpServer = createServer(app);
 
   try {
+    // Log the resolver structure for debugging
+    console.log('=== RESOLVER STRUCTURE ===');
+    logResolverKeys(resolvers);
+    
     // When you're ready to go back to file-based schemas:
     const typeDefs = loadSchemaSync(path.join(__dirname, './schema/**/*.graphql'), {
       loaders: [new GraphQLFileLoader()]
@@ -48,6 +75,13 @@ async function startServer() {
       typeDefs,
       resolvers,
     });
+    
+    // Validate schema
+    const validationErrors = validateSchema(schema);
+    if (validationErrors.length > 0) {
+      console.error('Schema validation errors:', validationErrors);
+      throw new Error('Schema validation failed');
+    }
 
     // Create WebSocket server for subscriptions
     const wsServer = new WebSocketServer({
@@ -81,6 +115,31 @@ async function startServer() {
             };
           },
         },
+        // Add a plugin to log resolver execution for debugging
+        {
+          async requestDidStart() {
+            return {
+              async didResolveOperation(context) {
+                console.log(`Operation: ${context.operationName || 'anonymous'}`);
+              },
+              async didEncounterErrors(ctx) {
+                console.error('GraphQL errors:', ctx.errors);
+              },
+              async executionDidStart() {
+                return {
+                  willResolveField({ info }) {
+                    console.log(`Resolving field: ${info.parentType.name}.${info.fieldName}`);
+                    return (error) => {
+                      if (error) {
+                        console.error(`Error resolving ${info.parentType.name}.${info.fieldName}:`, error);
+                      }
+                    };
+                  },
+                };
+              },
+            };
+          },
+        },
       ],
     });
 
@@ -104,21 +163,61 @@ async function startServer() {
       res.sendStatus(200);
     });
 
-    // Apply middleware
+    // Add a middleware to log incoming requests
+    app.use('/graphql', (req, res, next) => {
+      console.log('Incoming GraphQL request:', {
+        method: req.method,
+        path: req.path,
+        headers: {
+          auth: req.headers.authorization ? 'Present' : 'Not present',
+          contentType: req.headers['content-type'],
+        },
+        body: req.body ? 'Present' : 'Not present',
+      });
+      next();
+    });
+
+    // Add an error middleware
+    app.use((err: any, req: any, res: any, next: (arg0: any) => void) => {
+      console.error('Express error middleware caught:', err);
+      next(err);
+    });
+
+    // Apply middleware with better error handling
     app.use(
       '/graphql',
       json(),
       cookieParser(),
-      authenticate,
+      (req, res, next) => {
+        try {
+          authenticate(req, res, next);
+        } catch (error) {
+          console.error('Authentication middleware error:', error);
+          next(error);
+        }
+      },
       expressMiddleware(server, {
         context: async ({ req }) => {
-          return {
-            prisma,
-            redis,
-            pubsub,
-            user: req.user,
-            token: req.headers.authorization,
-          };
+          try {
+            const context = {
+              prisma,
+              redis,
+              pubsub,
+              user: req.user,
+              token: req.headers.authorization,
+            };
+      
+            console.log('[GraphQL] Request context created:', {
+              user: req.user ? `ID: ${req.user.id}` : 'anonymous',
+              hasToken: !!req.headers.authorization,
+            });
+            
+            return context;
+          } catch (error) {
+            console.error('Error creating context:', error);
+            // Return a basic context even on error
+            return { prisma, redis, pubsub };
+          }
         },
       })
     );

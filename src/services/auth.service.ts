@@ -76,7 +76,7 @@ export class AuthService {
     };
   }
 
-  async signup(data: { email: string; password: string; name?: string }, res: Response) {
+  async signup(data: { email: string; password: string; name: string | undefined }, res: Response) {
     try {
       const hashedPassword = await bcrypt.hash(data.password, 10);
       const user = await prisma.user.create({
@@ -100,10 +100,10 @@ export class AuthService {
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
 
-      return { access_token: accessToken, user };
+      return { token: accessToken, user };
     } catch (error: any) {
       if (
-        error instanceof prisma.PrismaClientKnownRequestError && 
+        error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002' &&
         Array.isArray(error.meta?.target) &&
         error.meta.target.includes('email')
@@ -172,12 +172,6 @@ export class AuthService {
     });
   }
 
-  private async findUserByEmail(email: string) {
-    return prisma.user.findUnique({
-      where: { email }
-    });
-  }
-  
   verifyToken(token: string) {
     try {
       return jwt.verify(token, JWT_SECRET);

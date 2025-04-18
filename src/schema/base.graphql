@@ -20,6 +20,16 @@ type PageInfo {
   endCursor: String
 }
 
+type BoilerplateConnection {
+  edges: [BoilerplateEdge!]!
+  pageInfo: PageInfo!
+}
+
+type BoilerplateEdge {
+  node: Boilerplate!
+  cursor: String!
+}
+
 type SuccessResponse {
   success: Boolean!
   message: String

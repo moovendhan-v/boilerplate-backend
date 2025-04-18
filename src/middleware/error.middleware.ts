@@ -13,7 +13,22 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  console.error(error);
+  const timestamp = new Date().toISOString();
+  const errorDetails = {
+    timestamp,
+    path: req.originalUrl,
+    method: req.method,
+    error: {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    },
+    requestBody: req.body,
+    requestQuery: req.query,
+    requestParams: req.params,
+  };
+
+  console.error('Error Details:', JSON.stringify(errorDetails, null, 2));
 
   if (error instanceof HttpError) {
     return res.status(error.statusCode).json({

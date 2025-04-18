@@ -26,13 +26,13 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
     if (!authHeader) {
       logger.warn('[Auth Middleware] No authorization header');
-      return next();
+      return res.status(401).json({ message: 'No authorization header' });
     }
 
     const token = authHeader.split(' ')[1];
     if (!token) {
       logger.warn('[Auth Middleware] No token in authorization header');
-      return next();
+      return res.status(401).json({ message: 'No token provided' });
     }
 
     try {
@@ -54,16 +54,16 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
       logger.info('[Auth Middleware] User attached to request', {
         user: req.user
-      })
+      });
 
       next();
     } catch (error) {
       logger.warn('[Auth Middleware] Invalid token', { error });
-      return next();
+      return res.status(401).json({ message: 'Invalid token' });
     }
   } catch (error) {
     logger.error('[Auth Middleware] Authentication error', { error });
-    return next();
+    return res.status(500).json({ message: 'Authentication error' });
   }
 };
 
