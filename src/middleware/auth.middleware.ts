@@ -24,9 +24,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       hasAuthHeader: !!authHeader 
     });
 
+    // If no auth header, just pass through
     if (!authHeader) {
-      logger.warn('[Auth Middleware] No authorization header');
-      return res.status(401).json({ message: 'No authorization header' });
+      logger.info('[Auth Middleware] No authorization header - passing through');
+      return next();
     }
 
     const token = authHeader.split(' ')[1];
