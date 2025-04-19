@@ -197,7 +197,7 @@ async function startServer() {
         }
       },
       expressMiddleware(server, {
-        context: async ({ req }) => {
+        context: async ({ req, res }) => {
           try {
             const context = {
               prisma,
@@ -205,10 +205,12 @@ async function startServer() {
               pubsub,
               user: req.user,
               token: req.headers.authorization,
+              req,  // It's also good to include the request object
+              res   // Include the response object
             };
       
             console.log('[GraphQL] Request context created:', {
-              user: req.user ? `ID: ${req.user.id}` : 'anonymous',
+              user: req.user ? `ID: ${req.user.sub}` : 'anonymous',
               hasToken: !!req.headers.authorization,
             });
             

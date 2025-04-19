@@ -7,7 +7,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: {
-        id: string;
+        sub: string;
         email: string;
         role: string;
       };
@@ -41,14 +41,15 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         userId: string;
         email: string;
         role: string;
+        sub: string;
       };
 
       logger.info('[Auth Middleware] Token decoded successfully', { 
-        userId: decoded.userId 
+        decoded
       });
 
       req.user = {
-        id: decoded.userId,
+        sub: decoded.sub,
         email: decoded.email,
         role: decoded.role
       };
@@ -84,14 +85,14 @@ export const authorize = (roles: string[]) => {
     }
 
     logger.info('[Auth Middleware] Checking authorization', { 
-      userId: req.user.id,
+      userId: req.user.sub,
       userRole: req.user.role,
       requiredRoles: roles 
     });
 
     if (roles.length && !roles.includes(req.user.role)) {
       logger.warn('[Auth Middleware] Insufficient permissions', { 
-        userId: req.user.id,
+        userId: req.user.sub,
         userRole: req.user.role,
         requiredRoles: roles 
       });
@@ -99,7 +100,7 @@ export const authorize = (roles: string[]) => {
     }
 
     logger.info('[Auth Middleware] Authorization successful', { 
-      userId: req.user.id,
+      userId: req.user.sub,
       role: req.user.role 
     });
     next();

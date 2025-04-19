@@ -20,7 +20,7 @@ const logger = winston.createLogger({
     winston.format.splat(),
     winston.format.json()
   ),
-  defaultMeta: { service: 'boilerplate-api' },
+  // defaultMeta: { service: 'boilerplate-api' },
   transports: [
     // Console transport
     new winston.transports.Console({
