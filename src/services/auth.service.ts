@@ -259,7 +259,7 @@ export class AuthService {
    * @param refreshToken Refresh token
    * @returns Object with new access token
    */
-  async refreshToken(refreshToken: string): Promise<{ access_token: string; refreshToken: string }> {
+  async refreshToken(refreshToken: string, res: Response): Promise<{ access_token: string; refreshToken: string }> {
     try {
       // Verify refresh token
       const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as { sub: string; jti: string };
@@ -308,6 +308,10 @@ export class AuthService {
       
       // Store new refresh token
       await this.storeRefreshToken(userId, newRefreshToken, newTokenId);
+
+      this.setRefreshTokenCookie(res, newRefreshToken);
+
+      logger.info(`New refreshtoken set ${res}`);
 
       logger.info(`Access token refreshed for user ${userId}`);
 

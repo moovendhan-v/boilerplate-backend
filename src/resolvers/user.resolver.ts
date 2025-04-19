@@ -37,8 +37,6 @@ interface ChangePasswordInput {
 const userService = new UserService();
 const authService = new AuthService();
 
-// Token expiration time in seconds (e.g., 7 days)
-const REFRESH_TOKEN_EXPIRY = 60 * 60 * 24 * 7;
 
 export const userResolvers = {
   Query: {
@@ -183,8 +181,15 @@ export const userResolvers = {
     refreshToken: async (_: any, __: any, context: Context) => {
       logger.info("[User Resolver] Token refresh attempt");
 
-      const { req } = context;
+      const { req, res } = context;
       const refreshToken = req?.cookies?.refreshToken;
+
+      if (!res) {
+        logger.error("[User Resolver] Response object missing in context");
+        throw new GraphQLError("Internal server error", {
+          extensions: { code: "INTERNAL_SERVER_ERROR" },
+        });
+      }
 
       if (!refreshToken) {
         logger.warn("[User Resolver] Refresh token missing in cookies");
@@ -194,7 +199,7 @@ export const userResolvers = {
       }
 
       try {
-        const result = await authService.refreshToken(refreshToken);
+        const result = await authService.refreshToken(refreshToken, res);
         logger.info("[User Resolver] Token refresh successful");
         return result;
       } catch (error) {
