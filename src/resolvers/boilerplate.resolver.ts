@@ -132,7 +132,7 @@ export const boilerplateResolvers = {
   Mutation: {
     createBoilerplate: async (_: any, { data }: { data: BoilerplateInput }, { user }: Context) => {
       logger.info('[Boilerplate Resolver] Create boilerplate attempt', {
-        userId: user?.id,
+        userId: user?.sub,
         data: { ...data }
       });
     
@@ -147,7 +147,7 @@ export const boilerplateResolvers = {
         // Make sure the service method is properly implemented and returns the expected type
         const boilerplate = await boilerplateService.createBoilerplate({
           ...data,
-          authorId: user.id
+          authorId: user?.sub
         });
     
         // Add additional validation to ensure we're returning a complete object
@@ -163,7 +163,7 @@ export const boilerplateResolvers = {
         return boilerplate;
       } catch (error: any) {
         logger.error('[Boilerplate Resolver] Failed to create boilerplate', {
-          userId: user.id,
+          userId: user.sub,
           error: error.message,
           stack: error.stack
         });
@@ -179,7 +179,7 @@ export const boilerplateResolvers = {
     },
     updateBoilerplate: async (_: any, { id, data }: { id: string, data: Partial<BoilerplateInput> }, { user }: Context) => {
       logger.info('[Boilerplate Resolver] Update boilerplate attempt', {
-        userId: user?.id,
+        userId: user?.sub,
         boilerplateId: id,
         updates: data
       });
@@ -195,7 +195,7 @@ export const boilerplateResolvers = {
         return await boilerplateService.updateBoilerplate(id, data);
       } catch (error: any) {
         logger.error('[Boilerplate Resolver] Failed to update boilerplate', {
-          userId: user.id,
+          userId: user?.sub,
           boilerplateId: id,
           error: error.message
         });
@@ -208,7 +208,7 @@ export const boilerplateResolvers = {
     
     deleteBoilerplate: async (_: any, { id }: { id: string }, { user }: Context) => {
       logger.info('[Boilerplate Resolver] Delete boilerplate attempt', {
-        userId: user?.id,
+        userId: user?.sub,
         boilerplateId: id
       });
 
@@ -224,7 +224,7 @@ export const boilerplateResolvers = {
         return true;
       } catch (error: any) {
         logger.error('[Boilerplate Resolver] Failed to delete boilerplate', {
-          userId: user.id,
+          userId: user?.sub,
           boilerplateId: id,
           error: error.message
         });
@@ -237,7 +237,7 @@ export const boilerplateResolvers = {
     
     likeBoilerplate: async (_: any, { id }: { id: string }, { user }: Context) => {
       logger.info('[Boilerplate Resolver] Like boilerplate', {
-        userId: user?.id,
+        userId: user?.sub,
         boilerplateId: id
       });
 
@@ -249,10 +249,10 @@ export const boilerplateResolvers = {
       }
 
       try {
-        return await boilerplateService.likeBoilerplate(id, user.id);
+        return await boilerplateService.likeBoilerplate(id, user?.sub);
       } catch (error: any) {
         logger.error('[Boilerplate Resolver] Failed to like boilerplate', {
-          userId: user.id,
+          userId: user?.sub,
           boilerplateId: id,
           error: error.message
         });
@@ -265,7 +265,7 @@ export const boilerplateResolvers = {
 
     unlikeBoilerplate: async (_: any, { id }: { id: string }, { user }: Context) => {
       logger.info('[Boilerplate Resolver] Unlike boilerplate', {
-        userId: user?.id,
+        userId: user?.sub,
         boilerplateId: id
       });
 
@@ -277,10 +277,10 @@ export const boilerplateResolvers = {
       }
 
       try {
-        return await boilerplateService.unlikeBoilerplate(id, user.id);
+        return await boilerplateService.unlikeBoilerplate(id, user?.sub);
       } catch (error: any) {
         logger.error('[Boilerplate Resolver] Failed to unlike boilerplate', {
-          userId: user.id,
+          userId: user?.sub,
           boilerplateId: id,
           error: error.message
         });
