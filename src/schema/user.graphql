@@ -42,6 +42,8 @@ extend type Mutation {
 
 type TokenResponse {
   access_token: String!
+  refreshToken: String!
+  user: User!
 }
 
 type LogoutResponse {
