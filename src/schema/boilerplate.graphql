@@ -42,6 +42,9 @@ type AuthPayload {
 type Query {
   boilerplate(id: ID!): Boilerplate
   
+  # Get users who liked a boilerplate
+  likedBy(boilerplateId: ID!): [String!]!
+  
   # Keep the original cursor-based pagination
   boilerplates(
     first: Int

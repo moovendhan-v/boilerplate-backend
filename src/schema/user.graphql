@@ -28,6 +28,8 @@ extend type Query {
   me: User @auth
   user(id: ID!): User @auth
   users(first: Int, after: String): UserConnection @auth @hasRole(role: "ADMIN")
+  userBoilerplates(userId: ID!): [Boilerplate!]! @auth
+  likedBoilerplates(userId: ID, first: Int, after: String): BoilerplateConnection! @auth
 }
 
 extend type Mutation {
