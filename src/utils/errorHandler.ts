@@ -28,7 +28,7 @@ export const STATUS_CODES = {
   },
 };
 
-// Error codes with their corresponding status codes
+// Error codes with their corresponding   status codes
 export enum ErrorCode {
   // Authentication Errors
   UNAUTHENTICATED = 'UNAUTHENTICATED',
@@ -56,7 +56,7 @@ export enum ErrorCode {
 }
 
 // Error code to HTTP status code mapping
-const errorStatusMap: Record<ErrorCode, number> = {
+export const errorStatusMap: Record<ErrorCode, number> = {
   [ErrorCode.UNAUTHENTICATED]: STATUS_CODES.CLIENT_ERROR.UNAUTHORIZED,
   [ErrorCode.UNAUTHORIZED]: STATUS_CODES.CLIENT_ERROR.FORBIDDEN,
   [ErrorCode.BAD_REQUEST]: STATUS_CODES.CLIENT_ERROR.BAD_REQUEST,

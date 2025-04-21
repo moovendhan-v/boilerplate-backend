@@ -98,21 +98,15 @@ export class UserResolver {
     const { res } = context;
 
     if (!res)
-      throw new CustomError(
-        "Internal server error",
-        ErrorCode.INTERNAL_SERVER_ERROR
-      );
+      throw new CustomError("Internal server error",
+        ErrorCode.INTERNAL_SERVER_ERROR);
 
     const user = await authService.validateUser(input.email, input.password);
     if (!user) throw new AuthorizationError("Invalid email or password");
 
     const result = await authService.login(user, res);
 
-    return {
-      token: result.token,
-      refreshToken: result.refreshToken,
-      user: result.user,
-    };
+    return {...result};
   }
 
   @Mutation(() => User)

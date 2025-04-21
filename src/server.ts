@@ -21,10 +21,13 @@ import { authenticate } from "./middleware/auth.middleware";
 import { validateSchema } from "graphql";
 import { requestLogger, errorLogger } from "./middleware/logger.middleware";
 import crypto from "crypto";
+import { GraphQLError } from "graphql";
+import type { Response } from "express";
 
 // Import resolvers
 import { boilerplateResolvers } from "./resolvers/boilerplate.resolver";
 import { userResolvers } from "./resolvers/user.resolver";
+import { errorStatusMap, isErrorCode, STATUS_CODES } from "./utils/errorHandler";
 
 // Merge resolvers properly
 const resolvers = {
@@ -120,10 +123,30 @@ async function startServer() {
     const hashQuery = (query: string = "") =>
       crypto.createHash("sha256").update(query).digest("hex");
 
-    // Create Apollo Server
     const server = new ApolloServer({
       schema,
       csrfPrevention: false, // Disable for development
+      formatError: (formattedError, error: unknown) => {
+        console.log("Formatted Error:", formattedError);
+        const status =
+          typeof formattedError.extensions?.status === "number"
+            ? formattedError.extensions.status
+            : formattedError.extensions?.code === "UNAUTHENTICATED"
+            ? 401
+            : formattedError.extensions?.code === "FORBIDDEN"
+            ? 403
+            : formattedError.extensions?.code === "BAD_USER_INPUT"
+            ? 400
+            : 500;
+
+        return {
+          ...formattedError,
+          extensions: {
+            ...formattedError.extensions,
+            status,
+          },
+        };
+      },
       plugins: [
         ApolloServerPluginDrainHttpServer({ httpServer }),
         {
@@ -178,12 +201,6 @@ async function startServer() {
                     logger.debug(`   ➤ Parent Type: ${info.parentType.name}`);
                     logger.debug(`   ➤ Return Type: ${info.returnType}`);
                     if (trace) logger.debug(`   ➤ Trace:\n${trace}`);
-
-                    // if (contextValue?.user) {
-                    //   logger.debug(
-                    //     `   ➤ User: ${contextValue.user.email} (${contextValue.user.role})`
-                    //   );
-                    // }
 
                     return (error, result) => {
                       const duration = Date.now() - fieldStart;
@@ -253,6 +270,51 @@ async function startServer() {
       res.sendStatus(200);
     });
 
+    // Add the status code middleware for GraphQL errors
+    app.use("/graphql", (req, res, next) => {
+      const originalSend = res.send;
+    
+      res.send = function (body) {
+        try {
+          const parsedBody = JSON.parse(body);
+    
+          if (parsedBody?.errors?.length > 0) {
+            const firstError = parsedBody.errors[0];
+    
+            // Case 1: use extension status directly
+            if (
+              firstError.extensions?.status &&
+              typeof firstError.extensions.status === "number"
+            ) {
+              res.status(firstError.extensions.status);
+            }
+    
+            // Case 2: use code and errorStatusMap
+            else if (
+              firstError.extensions?.code &&
+              isErrorCode(firstError.extensions.code)
+            ) {
+              const code = firstError.extensions.code;
+              const statusCode = errorStatusMap[code as keyof typeof errorStatusMap];
+              res.status(statusCode);
+            }
+    
+            // Default fallback
+            else {
+              res.status(STATUS_CODES.SERVER_ERROR.INTERNAL_SERVER_ERROR);
+            }
+          }
+        } catch (e) {
+          console.error("Error processing GraphQL response:", e);
+        }
+    
+        return originalSend.call(this, body);
+      };
+    
+      next();
+    });
+    
+
     // Apply middleware with better error handling for GraphQL
     app.use(
       "/graphql",
@@ -286,7 +348,7 @@ async function startServer() {
           } catch (error) {
             logger.error("Error creating context:", error);
             // Return a basic context even on error
-            return { prisma, redis, pubsub };
+            return { prisma, redis, pubsub, res };
           }
         },
       })
