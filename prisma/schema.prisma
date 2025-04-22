@@ -7,53 +7,97 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Boilerplate {
-  id            String     @id @default(cuid()) @map("_id")
-  title         String
-  description   String
-  repositoryUrl String
-  framework     String
-  language      String
-  tags          String[]
-  stars         Int        @default(0)
-  downloads     Int        @default(0)
-  author        User       @relation("UserBoilerplates", fields: [authorId], references: [id])
-  authorId      String
-  likes         UserLikes[]
-  files         File[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-}
-
-
 model User {
-  id                String        @id @default(cuid()) @map("_id")
-  email            String        @unique
-  password         String
-  name             String?
-  role             String        @default("USER")
-  boilerplates     Boilerplate[] @relation("UserBoilerplates")
-  likes            UserLikes[]
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id           String   @id @default(cuid()) @map("_id")
+  email        String   @unique
+  password     String?
+  name         String?
+  avatar       String?
+  role         String   @default("USER")
+  authProvider String   @default("EMAIL")
+  githubId     String?  @unique
+  githubToken  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  boilerplates Boilerplate[] @relation("UserBoilerplates")
+  likes        UserLikes[]
+  comments     Comment[]
 }
 
-model UserLikes {
-  id            String      @id @default(cuid()) @map("_id")
-  user          User        @relation(fields: [userId], references: [id])
-  userId        String
-  boilerplate   Boilerplate @relation(fields: [boilerplateId], references: [id])
-  boilerplateId String
-  createdAt     DateTime    @default(now())
+model Category {
+  id   String @id @default(cuid()) @map("_id")
+  name String @unique
+  slug String @unique
 
-  @@unique([userId, boilerplateId])
+  // Relations
+  boilerplates Boilerplate[]
+}
+
+model Boilerplate {
+  id                  String    @id @default(cuid()) @map("_id")
+  title               String
+  description         String
+  repositoryUrl       String
+  framework           String
+  language            String
+  tags                String[]
+  stars               Int       @default(0)
+  downloads           Int       @default(0)
+  visibility          String    @default("PUBLIC") // PUBLIC or PRIVATE
+  isSynced            Boolean   @default(false)
+  lastSyncedAt        DateTime?
+  authorId            String
+  categoryId          String?
+  forkedFromId        String?
+  currentVersion      String    @default("1.0.0") // Current version number as string
+  latestVersionNumber String    @default("1.0.0") // Store latest version number directly
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Relations
+  author     User          @relation("UserBoilerplates", fields: [authorId], references: [id])
+  category   Category?     @relation(fields: [categoryId], references: [id])
+  forkedFrom Boilerplate?  @relation("BoilerplateForks", fields: [forkedFromId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  forks      Boilerplate[] @relation("BoilerplateForks")
+  likes      UserLikes[]
+  comments   Comment[]
+  files      File[]
 }
 
 model File {
-  id            String      @id @default(cuid()) @map("_id")
+  id            String @id @default(cuid()) @map("_id")
   name          String
   path          String
   content       String
-  boilerplate   Boilerplate @relation(fields: [boilerplateId], references: [id])
   boilerplateId String
+
+  // Relations
+  boilerplate Boilerplate @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id            String   @id @default(cuid()) @map("_id")
+  userId        String
+  boilerplateId String
+  content       String
+  createdAt     DateTime @default(now())
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [id])
+  boilerplate Boilerplate @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+}
+
+model UserLikes {
+  id            String   @id @default(cuid()) @map("_id")
+  userId        String
+  boilerplateId String
+  createdAt     DateTime @default(now())
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [id])
+  boilerplate Boilerplate @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, boilerplateId])
 }

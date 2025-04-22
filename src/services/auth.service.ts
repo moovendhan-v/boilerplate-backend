@@ -5,6 +5,7 @@ import * as jwt from "jsonwebtoken";
 import { redis } from "../config/redis";
 import { Response } from "express";
 import logger from "../utils/logger";
+import axios from "axios";
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
@@ -24,6 +25,11 @@ interface AuthResponse {
   user: SafeUser;
 }
 
+// Add these constants at the top with your other constants
+const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
+const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
+const GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL;
+
 export class AuthService {
   /**
    * Validates user credentials
@@ -31,35 +37,35 @@ export class AuthService {
    * @param password User password
    * @returns User object without password or null if validation fails
    */
-  async validateUser(
-    email: string,
-    password: string
-  ): Promise<SafeUser | null> {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { email },
-      });
+  // async validateUser(
+  //   email: string,
+  //   password: string
+  // ): Promise<SafeUser | null> {
+  //   try {
+  //     const user = await prisma.user.findUnique({
+  //       where: { email },
+  //     });
 
-      if (!user) {
-        logger.warn(`User validation failed: Email ${email} not found`);
-        return null;
-      }
+  //     if (!user) {
+  //       logger.warn(`User validation failed: Email ${email} not found`);
+  //       return null;
+  //     }
 
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        logger.warn(`User validation failed: Invalid password for ${email}`);
-        return null;
-      }
+  //     const isPasswordValid = await bcrypt.compare(password, user.password);
+  //     if (!isPasswordValid) {
+  //       logger.warn(`User validation failed: Invalid password for ${email}`);
+  //       return null;
+  //     }
 
-      const { password: _, ...safeUser } = user;
-      return safeUser;
-    } catch (error) {
-      logger.error("Error validating user:", error);
-      throw new GraphQLError("Authentication error", {
-        extensions: { code: "INTERNAL_SERVER_ERROR" },
-      });
-    }
-  }
+  //     const { password: _, ...safeUser } = user;
+  //     return safeUser;
+  //   } catch (error) {
+  //     logger.error("Error validating user:", error);
+  //     throw new GraphQLError("Authentication error", {
+  //       extensions: { code: "INTERNAL_SERVER_ERROR" },
+  //     });
+  //   }
+  // }
 
   /**
    * Generates JWT access and refresh tokens
@@ -413,5 +419,118 @@ export class AuthService {
       logger.warn("Token verification failed:", error);
       return null;
     }
+  }
+
+  /**
+   * Handles GitHub OAuth authentication
+   * @param code GitHub authorization code
+   * @param res Express response object
+   */
+  async githubAuth(code: string, res: Response): Promise<AuthResponse> {
+    try {
+      // Exchange code for access token
+      const tokenResponse = await axios.post(
+        'https://github.com/login/oauth/access_token',
+        {
+          client_id: GITHUB_CLIENT_ID,
+          client_secret: GITHUB_CLIENT_SECRET,
+          code,
+          redirect_uri: GITHUB_CALLBACK_URL,
+        },
+        {
+          headers: {
+            Accept: 'application/json',
+          },
+        }
+      );
+  
+      const accessToken = tokenResponse.data.access_token;
+  
+      // Get user data from GitHub
+      const githubUser = await axios.get('https://api.github.com/user', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+  
+      // Get user email from GitHub
+      const emails = await axios.get('https://api.github.com/user/emails', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+  
+      const primaryEmail = emails.data.find((email: any) => email.primary)?.email;
+  
+      // Type-safe approach for finding user
+      let user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: primaryEmail },
+            { githubId: githubUser.data.id.toString() }
+          ]
+        }
+      });
+  
+      if (!user) {
+        // Create new user with type-safe data
+        user = await prisma.user.create({
+          data: {
+            email: primaryEmail,
+            name: githubUser.data.name || 'GitHub User',
+            avatar: githubUser.data.avatar_url,
+            role: 'USER',
+            authProvider: 'GITHUB',
+            githubId: githubUser.data.id.toString(),
+            githubToken: accessToken,
+          },
+        });
+      } else {
+        // Update existing user with type-safe data
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            githubId: githubUser.data.id.toString(),
+            githubToken: accessToken,
+            avatar: githubUser.data.avatar_url,
+            name: user.name || githubUser.data.name,
+            authProvider: 'GITHUB',
+          },
+        });
+      }
+  
+      // Remove password from user object
+      const { password: _, ...safeUser } = user;
+      
+      // Generate tokens
+      const { accessToken: jwtToken, refreshToken, tokenId } = this.generateTokens(safeUser);
+  
+      // Store refresh token
+      await this.storeRefreshToken(user.id, refreshToken, tokenId);
+  
+      // Set refresh token cookie
+      this.setRefreshTokenCookie(res, refreshToken);
+  
+      logger.info(`User ${user.id} authenticated via GitHub`);
+  
+      return {
+        token: jwtToken,
+        refreshToken,
+        user: safeUser,
+      };
+    } catch (error) {
+      logger.error('GitHub authentication error:', error);
+      throw new GraphQLError('GitHub authentication failed', {
+        extensions: { code: 'INTERNAL_SERVER_ERROR' },
+      });
+    }
+  }
+
+  /**
+   * Create safe user object without sensitive data
+   */
+  private getSafeUser(user: User): SafeUser {
+    const { password: _, ...safeUser } = user;
+    return safeUser;
   }
 }

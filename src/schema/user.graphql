@@ -3,6 +3,8 @@ type User {
   email: String!
   name: String
   role: String!
+  avatar: String
+  authProvider: String
   createdAt: String!
   updatedAt: String!
   boilerplates: [Boilerplate!]!
@@ -36,6 +38,7 @@ extend type Mutation {
   signup(input: SignupInput!): AuthPayload!
   createUser(input: CreateUserInput!): AuthPayload!
   login(input: LoginInput!): AuthPayload!
+  githubAuth(code: String!): AuthPayload!
   updateProfile(input: UpdateProfileInput!): User! @auth
   changePassword(input: ChangePasswordInput!): SuccessResponse! @auth
   refreshToken: TokenResponse!

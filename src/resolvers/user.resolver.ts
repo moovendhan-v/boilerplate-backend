@@ -90,24 +90,24 @@ export class UserResolver {
     return await userService.signup(input);
   }
 
-  @Mutation(() => Object)
-  async login(
-    @Args("input") input: { email: string; password: string },
-    @Context() context: AppContext
-  ) {
-    const { res } = context;
+  // @Mutation(() => Object)
+  // async login(
+  //   @Args("input") input: { email: string; password: string },
+  //   @Context() context: AppContext
+  // ) {
+  //   const { res } = context;
 
-    if (!res)
-      throw new CustomError("Internal server error",
-        ErrorCode.INTERNAL_SERVER_ERROR);
+  //   if (!res)
+  //     throw new CustomError("Internal server error",
+  //       ErrorCode.INTERNAL_SERVER_ERROR);
 
-    const user = await authService.validateUser(input.email, input.password);
-    if (!user) throw new AuthorizationError("Invalid email or password");
+  //   const user = await authService.validateUser(input.email, input.password);
+  //   if (!user) throw new AuthorizationError("Invalid email or password");
 
-    const result = await authService.login(user, res);
+  //   const result = await authService.login(user, res);
 
-    return {...result};
-  }
+  //   return {...result};
+  // }
 
   @Mutation(() => User)
   async updateProfile(
@@ -173,9 +173,25 @@ export class UserResolver {
     if (!userId) throw new CustomError("userId is required", ErrorCode.BAD_USER_INPUT);
     return await userService.getLikedBoilerplates(userId);
   }
+
+  @Mutation(() => Object)
+  async githubAuth(
+    @Args('code') code: string,
+    @Context() context: AppContext
+  ) {
+    const { res } = context;
+    if (!res) {
+      throw new CustomError(
+        'Internal server error',
+        ErrorCode.INTERNAL_SERVER_ERROR
+      );
+    }
+
+    return await authService.githubAuth(code, res);
+  }
 }
 
-// Export the resolver object structure that server.ts expects
+// Update the resolver object structure
 export const userResolvers = {
   Query: {
     me: (_: unknown, _args: unknown, context: AppContext) => UserResolver.instance.me(context),
@@ -189,11 +205,11 @@ export const userResolvers = {
       _: unknown,
       args: { input: { email: string; password: string; name?: string } }
     ) => UserResolver.instance.signup(args.input),
-    login: (
-      _: unknown,
-      args: { input: { email: string; password: string } },
-      context: AppContext
-    ) => UserResolver.instance.login(args.input, context),
+    // login: (
+    //   _: unknown,
+    //   args: { input: { email: string; password: string } },
+    //   context: AppContext
+    // ) => UserResolver.instance.login(args.input, context),
     updateProfile: (
       _: unknown,
       args: { input: { name?: string; email?: string } },
@@ -208,6 +224,8 @@ export const userResolvers = {
       UserResolver.instance.refreshToken(context),
     logout: (_: unknown, _args: unknown, context: AppContext) =>
       UserResolver.instance.logout(context),
+    githubAuth: (_: unknown, { code }: { code: string }, context: AppContext) =>
+      UserResolver.instance.githubAuth(code, context),
   },
   User: {
     // Add this field resolver
