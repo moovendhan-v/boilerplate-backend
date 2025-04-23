@@ -148,6 +148,9 @@ type BoilerplateWithAuthor = Prisma.BoilerplateGetPayload<{
   }
 }>;
 
+// Add this import near the top with other imports
+import { Category } from '../types/category.type';
+
 @Resolver(() => Boilerplate)
 export class BoilerplateResolver {
   private static _instance: BoilerplateResolver;
@@ -388,15 +391,30 @@ export class BoilerplateResolver {
     }
     return [];
   }
+
+  @Query(() => [Category])
+  async categories() {
+    logger.info('[Boilerplate Resolver] Fetching all categories');
+    
+    try {
+      return await this.boilerplateService.findAllCategories();
+    } catch (error: any) {
+      logger.error('[Boilerplate Resolver] Failed to fetch categories', {
+        error: error.message
+      });
+      throw handleError(error);
+    }
+  }
 }
 
-
+// Update the exported resolvers object
 export const boilerplateResolvers = {
   Query: {
     boilerplate: (_: unknown, args: { id: string }) => BoilerplateResolver.instance.boilerplate(args.id),
     boilerplates: (_: unknown, args: { first: number; after?: string; where?: BoilerplateWhereInput; orderBy?: BoilerplateOrderByInput }) => 
       BoilerplateResolver.instance.boilerplates(args.first, args.after, args.where, args.orderBy),
-    likedBy: (_: unknown, args: { boilerplateId: string }) => BoilerplateResolver.instance.likedBy(args.boilerplateId)
+    likedBy: (_: unknown, args: { boilerplateId: string }) => BoilerplateResolver.instance.likedBy(args.boilerplateId),
+    categories: () => BoilerplateResolver.instance.categories()
   },
   Mutation: {
     createBoilerplate: (_: unknown, args: { data: BoilerplateInput }, context: AppContext) =>

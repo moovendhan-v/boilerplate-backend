@@ -311,4 +311,20 @@ export class BoilerplateService {
       throw error;
     }
   }
+
+  // Add this method to your BoilerplateService class
+  async findAllCategories() {
+    try {
+      return await prisma.category.findMany({
+        orderBy: {
+          name: 'asc'
+        }
+      });
+    } catch (error) {
+      logger.error('[BoilerplateService] Failed to fetch categories', {
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      throw error;
+    }
+  }
 }
