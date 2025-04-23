@@ -514,9 +514,7 @@ export class AuthService {
       logger.info(`User ${user.id} authenticated via GitHub`);
   
       return {
-        token: jwtToken,
-        refreshToken,
-        user: safeUser,
+        token: jwtToken, refreshToken, user: safeUser,
       };
     } catch (error) {
       logger.error('GitHub authentication error:', error);

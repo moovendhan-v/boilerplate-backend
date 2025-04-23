@@ -162,29 +162,30 @@ export class UserResolver {
     };
   }
 
-  @Query(() => [Object], { name: 'userBoilerplates' })
+  @Query(() => [Object], { name: "userBoilerplates" })
   async userBoilerplates(@Args("userId", { type: () => ID }) userId: string) {
-    if (!userId) throw new CustomError("userId is required", ErrorCode.BAD_USER_INPUT);
+    if (!userId)
+      throw new CustomError("userId is required", ErrorCode.BAD_USER_INPUT);
     return await userService.getUserBoilerplates(userId);
   }
 
   @Query(() => [Object])
   async likedBoilerplates(@Args("userId", { type: () => ID }) userId: string) {
-    if (!userId) throw new CustomError("userId is required", ErrorCode.BAD_USER_INPUT);
+    if (!userId)
+      throw new CustomError("userId is required", ErrorCode.BAD_USER_INPUT);
     return await userService.getLikedBoilerplates(userId);
   }
 
   @Mutation(() => Object)
-  async githubAuth(
-    @Args('code') code: string,
-    @Context() context: AppContext
-  ) {
+  async githubAuth(@Args("code") code: string, @Context() context: AppContext) {
     const { res } = context;
     if (!res) {
-      throw new CustomError(
-        'Internal server error',
-        ErrorCode.INTERNAL_SERVER_ERROR
-      );
+      throw new CustomError("Internal server error",ErrorCode.INTERNAL_SERVER_ERROR);
+    }
+
+    // Add validation for the code format
+    if (!code || typeof code !== "string" || code.length < 20) {
+      throw new CustomError("Invalid GitHub authorization code",ErrorCode.BAD_USER_INPUT);
     }
 
     return await authService.githubAuth(code, res);
@@ -194,11 +195,19 @@ export class UserResolver {
 // Update the resolver object structure
 export const userResolvers = {
   Query: {
-    me: (_: unknown, _args: unknown, context: AppContext) => UserResolver.instance.me(context),
-    user: (_: unknown, args: { id: string }, context: AppContext) => UserResolver.instance.user(args.id, context),
-    users: (_: unknown, args: { first: number; after: string | undefined }, context: AppContext) => UserResolver.instance.users(args.first, args.after, context),
-    userBoilerplates: (_: unknown, args: { userId: string }) => UserResolver.instance.userBoilerplates(args.userId),
-    likedBoilerplates: (_: unknown, args: { userId: string }) => UserResolver.instance.likedBoilerplates(args.userId)
+    me: (_: unknown, _args: unknown, context: AppContext) =>
+      UserResolver.instance.me(context),
+    user: (_: unknown, args: { id: string }, context: AppContext) =>
+      UserResolver.instance.user(args.id, context),
+    users: (
+      _: unknown,
+      args: { first: number; after: string | undefined },
+      context: AppContext
+    ) => UserResolver.instance.users(args.first, args.after, context),
+    userBoilerplates: (_: unknown, args: { userId: string }) =>
+      UserResolver.instance.userBoilerplates(args.userId),
+    likedBoilerplates: (_: unknown, args: { userId: string }) =>
+      UserResolver.instance.likedBoilerplates(args.userId),
   },
   Mutation: {
     signup: (
@@ -229,11 +238,11 @@ export const userResolvers = {
   },
   User: {
     // Add this field resolver
-    boilerplates: (parent: User) => 
+    boilerplates: (parent: User) =>
       UserResolver.instance.userBoilerplates(parent.id),
-    
+
     // You should also add likedBoilerplates since it's defined in your schema
-    likedBoilerplates: (parent: User) => 
-      UserResolver.instance.likedBoilerplates(parent.id)
+    likedBoilerplates: (parent: User) =>
+      UserResolver.instance.likedBoilerplates(parent.id),
   },
 };
