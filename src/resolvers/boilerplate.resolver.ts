@@ -397,7 +397,9 @@ export class BoilerplateResolver {
     logger.info('[Boilerplate Resolver] Fetching all categories');
     
     try {
-      return await this.boilerplateService.findAllCategories();
+      const resp = await this.boilerplateService.findAllCategories();
+      logger.info('[Boilerplate Resolver] Fetched categories', { count: resp.length });
+      return resp;
     } catch (error: any) {
       logger.error('[Boilerplate Resolver] Failed to fetch categories', {
         error: error.message

@@ -27,9 +27,12 @@ model User {
 }
 
 model Category {
-  id   String @id @default(cuid()) @map("_id")
-  name String @unique
-  slug String @unique
+  id          String  @id @default(cuid()) @map("_id")
+  name        String
+  description String
+  slug        String  @unique
+  icon        String?
+  color       String?
 
   // Relations
   boilerplates Boilerplate[]

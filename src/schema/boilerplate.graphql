@@ -43,6 +43,9 @@ type Category {
   id: ID!
   name: String!
   slug: String!
+  icon: String!
+  color: String!
+  description: String!
 }
 
 type Query {

@@ -10,4 +10,13 @@ export class Category {
 
   @Field()
   slug!: string;
+
+  @Field()
+  icon!: string;
+
+  @Field()
+  color!: string;
+
+  @Field()
+  description!: string;
 }
