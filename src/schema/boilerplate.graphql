@@ -1,3 +1,5 @@
+scalar Upload
+
 type Boilerplate {
   id: ID!
   title: String!
@@ -124,14 +126,17 @@ enum Sort {
   desc
 }
 
+# Upload scalar for file uploads
 input CreateBoilerplateInput {
   title: String!
   description: String!
   repositoryUrl: String!
-  framework: String!
+  framework: String
   language: String!
   tags: [String!]!
-  files: [FileInput!]!
+  files: [FileInput!]
+  zipFile: Upload 
+  category: String!
 }
 
 input UpdateBoilerplateInput {

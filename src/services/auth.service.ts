@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 const REFRESH_SECRET = process.env.REFRESH_SECRET || "your-refresh-secret";
 
 // Token expiration times in seconds
-const ACCESS_TOKEN_EXPIRY = "15m";
+const ACCESS_TOKEN_EXPIRY = "24h";
 const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60; // 7 days
 
 // Type for user without password

@@ -1,5 +1,9 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import logger from "../utils/logger";
+import GitService from "./git.service";
+import path from "path";
+import fs from "fs/promises";
+import { CustomError } from "../utils/errorHandler";
 
 const prisma = new PrismaClient();
 
@@ -22,6 +26,9 @@ interface BoilerplateOrderByInput {
 }
 
 export class BoilerplateService {
+  gitService = new GitService();
+  boilerplatesBasePath: string = process.env.BOILERPLATE_BASE_DIR || "";
+
   async findBoilerplateById(id: string) {
     return prisma.boilerplate.findUnique({
       where: { id },
@@ -61,17 +68,40 @@ export class BoilerplateService {
     framework: string;
     language: string;
     tags?: string[];
-    files?: Array<{ name: string; path: string; content: string }>;
+    category: string;
+    zipFilePath?: string;
   }) {
+    // Validate and sanitize input data
+    if (!data.title || !data.authorId || !data.category) {
+      throw new CustomError("Missing required fields");
+    }
+
+    // Sanitize the title to create a safe directory name
+    const sanitizedTitle = data.title.replace(/[^a-zA-Z0-9-_]/g, "-");
+    const repoPath = path.join(
+      this.boilerplatesBasePath,
+      data.authorId,
+      sanitizedTitle
+    );
+    logger.info("[BoilerplateService] Repo path", { repoPath });
+
+    let result;
+
     try {
+      logger.info("boilerplatesBasePath", { path : this.boilerplatesBasePath})
+      // Ensure the base directory exists
+      if (!this.boilerplatesBasePath) {
+        throw new CustomError("Base directory not configured");
+      }
+
       logger.info("[BoilerplateService] Creating new boilerplate", {
-        authorId: data.authorId,
-        title: data.title,
+        data
       });
 
-      const result = await prisma.boilerplate.create({
+      // Create initial database record
+      result = await prisma.boilerplate.create({
         data: {
-          title: data.title,
+          title: sanitizedTitle,
           description: data.description,
           repositoryUrl: data.repositoryUrl,
           framework: data.framework,
@@ -80,17 +110,6 @@ export class BoilerplateService {
           authorId: data.authorId,
           stars: 0,
           downloads: 0,
-          ...(data.files?.length
-            ? {
-                files: {
-                  create: data.files.map(({ name, path, content }) => ({
-                    name,
-                    path,
-                    content,
-                  })),
-                },
-              }
-            : {}),
         },
         include: {
           author: true,
@@ -99,7 +118,43 @@ export class BoilerplateService {
         },
       });
 
-      if (!result) throw new Error("Failed to create boilerplate");
+      if (!result) throw new CustomError("Failed to create boilerplate");
+      logger.info("[BoilerplateService] Boilerplate record created", { result });
+
+      // Process uploaded zip file if provided
+      if (data.zipFilePath) {
+        const processResult = await this.gitService.processUploadedZip(
+          data.zipFilePath,
+          data.category,
+          sanitizedTitle,
+          "System",
+          "system@boilerplates.com"
+        );
+
+        if (!processResult.success) {
+          throw new CustomError(
+            `Failed to process zip file: ${processResult.message}`
+          );
+        }
+
+        // Update repository path in database
+        await prisma.boilerplate.update({
+          where: { id: result.id },
+          data: { repositoryUrl: processResult.path },
+        });
+
+        logger.info("[BoilerplateService] Zip file processed successfully", {
+          repoPath: processResult.path,
+        });
+      } else {
+        // Initialize empty repository if no zip file
+        const initRepo = await this.gitService.initRepo(repoPath);
+        logger.info("[BoilerplateService] Repo initialized", {
+          success: initRepo.success,
+          message: initRepo.message,
+        })
+        if (!initRepo.success) throw new CustomError("Failed to init repo");
+      }
 
       return result;
     } catch (error: any) {
@@ -107,6 +162,19 @@ export class BoilerplateService {
         error: error.message,
         stack: error.stack,
       });
+      try {
+        if (!this.boilerplatesBasePath) throw new Error("BASE_DIR not set");
+        await fs.rm(repoPath, { recursive: true, force: true });
+
+        // Cleanup database record if it was created
+        if (result?.id) {
+          await prisma.boilerplate.delete({
+            where: { id: result.id },
+          });
+        }
+      } catch (cleanupError) {
+        console.error("Cleanup error during rollback:", cleanupError);
+      }
       throw error;
     }
   }
@@ -174,8 +242,7 @@ export class BoilerplateService {
       if (where.framework) whereConditions.framework = where.framework;
       if (where.language) whereConditions.language = where.language;
       if (where.authorId) whereConditions.authorId = where.authorId;
-      if (where.tags?.length)
-        whereConditions.tags = { hasSome: where.tags };
+      if (where.tags?.length) whereConditions.tags = { hasSome: where.tags };
     }
 
     if (afterId) whereConditions.id = { gt: afterId };
@@ -216,8 +283,7 @@ export class BoilerplateService {
       if (where.framework) whereConditions.framework = where.framework;
       if (where.language) whereConditions.language = where.language;
       if (where.authorId) whereConditions.authorId = where.authorId;
-      if (where.tags?.length)
-        whereConditions.tags = { hasSome: where.tags };
+      if (where.tags?.length) whereConditions.tags = { hasSome: where.tags };
     }
 
     return prisma.boilerplate.count({ where: whereConditions });
@@ -276,8 +342,7 @@ export class BoilerplateService {
         },
       });
 
-      if (!existingLike)
-        throw new Error("User has not liked this boilerplate");
+      if (!existingLike) throw new Error("User has not liked this boilerplate");
 
       await prisma.$transaction([
         prisma.userLikes.delete({
@@ -317,12 +382,12 @@ export class BoilerplateService {
     try {
       return await prisma.category.findMany({
         orderBy: {
-          name: 'asc'
-        }
+          name: "asc",
+        },
       });
     } catch (error) {
-      logger.error('[BoilerplateService] Failed to fetch categories', {
-        error: error instanceof Error ? error.message : 'Unknown error'
+      logger.error("[BoilerplateService] Failed to fetch categories", {
+        error: error instanceof Error ? error.message : "Unknown error",
       });
       throw error;
     }
