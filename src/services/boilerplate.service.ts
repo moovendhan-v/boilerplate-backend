@@ -1,21 +1,10 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import logger from "../utils/logger";
-import GitService from "./git.service";
 import path from "path";
 import fs from "fs/promises";
 import { CustomError } from "../utils/errorHandler";
 
 const prisma = new PrismaClient();
-
-interface BoilerplateWhereInput {
-  title?: { contains: string; mode: Prisma.QueryMode };
-  description?: { contains: string; mode: Prisma.QueryMode };
-  framework?: { equals: string };
-  language?: { equals: string };
-  authorId?: string;
-  tags?: { hasSome: string[] };
-  id?: { gt: string };
-}
 
 interface BoilerplateOrderByInput {
   title?: Prisma.SortOrder;
@@ -26,20 +15,27 @@ interface BoilerplateOrderByInput {
 }
 
 export class BoilerplateService {
-  gitService = new GitService();
   boilerplatesBasePath: string = process.env.BOILERPLATE_BASE_DIR || "";
 
   async findBoilerplateById(id: string) {
-    return prisma.boilerplate.findUnique({
-      where: { id },
-      include: {
-        author: true,
-        files: true,
-        likes: true,
-      },
-    });
+    try {
+      return await prisma.boilerplate.findUnique({
+        where: { id },
+        include: {
+          author: true,
+          files: true,
+          likes: true,
+        },
+      });
+    } catch (error: any) {
+      logger.error("[BoilerplateService] Failed to fetch boilerplate by ID", {
+        error: error.message,
+        id,
+      });
+      throw new CustomError("Failed to fetch boilerplate");
+    }
   }
-
+  
   async findBoilerplates(params: {
     skip?: number;
     take?: number;
@@ -47,137 +43,98 @@ export class BoilerplateService {
     orderBy?: Prisma.BoilerplateOrderByWithRelationInput;
   }) {
     const { skip, take, where, orderBy } = params;
-    return prisma.boilerplate.findMany({
-      skip,
-      take,
-      where,
-      orderBy,
-      include: {
-        author: true,
-        files: true,
-        likes: true,
-      },
-    });
-  }
-
-  async createBoilerplate(data: {
-    title: string;
-    description: string;
-    authorId: string;
-    repositoryUrl: string;
-    framework: string;
-    language: string;
-    tags?: string[];
-    category: string;
-    zipFilePath?: string;
-  }) {
-    // Validate and sanitize input data
-    if (!data.title || !data.authorId || !data.category) {
-      throw new CustomError("Missing required fields");
-    }
-
-    // Sanitize the title to create a safe directory name
-    const sanitizedTitle = data.title.replace(/[^a-zA-Z0-9-_]/g, "-");
-    const repoPath = path.join(
-      this.boilerplatesBasePath,
-      data.authorId,
-      sanitizedTitle
-    );
-    logger.info("[BoilerplateService] Repo path", { repoPath });
-
-    let result;
-
     try {
-      logger.info("boilerplatesBasePath", { path : this.boilerplatesBasePath})
-      // Ensure the base directory exists
-      if (!this.boilerplatesBasePath) {
-        throw new CustomError("Base directory not configured");
-      }
-
-      logger.info("[BoilerplateService] Creating new boilerplate", {
-        data
-      });
-
-      // Create initial database record
-      result = await prisma.boilerplate.create({
-        data: {
-          title: sanitizedTitle,
-          description: data.description,
-          repositoryUrl: data.repositoryUrl,
-          framework: data.framework,
-          language: data.language,
-          tags: data.tags || [],
-          authorId: data.authorId,
-          stars: 0,
-          downloads: 0,
-        },
+      return await prisma.boilerplate.findMany({
+        skip,
+        take,
+        where,
+        orderBy,
         include: {
           author: true,
           files: true,
           likes: true,
         },
       });
-
-      if (!result) throw new CustomError("Failed to create boilerplate");
-      logger.info("[BoilerplateService] Boilerplate record created", { result });
-
-      // Process uploaded zip file if provided
-      if (data.zipFilePath) {
-        const processResult = await this.gitService.processUploadedZip(
-          data.zipFilePath,
-          data.category,
-          sanitizedTitle,
-          "System",
-          "system@boilerplates.com"
-        );
-
-        if (!processResult.success) {
-          throw new CustomError(
-            `Failed to process zip file: ${processResult.message}`
-          );
-        }
-
-        // Update repository path in database
-        await prisma.boilerplate.update({
-          where: { id: result.id },
-          data: { repositoryUrl: processResult.path },
-        });
-
-        logger.info("[BoilerplateService] Zip file processed successfully", {
-          repoPath: processResult.path,
-        });
-      } else {
-        // Initialize empty repository if no zip file
-        const initRepo = await this.gitService.initRepo(repoPath);
-        logger.info("[BoilerplateService] Repo initialized", {
-          success: initRepo.success,
-          message: initRepo.message,
-        })
-        if (!initRepo.success) throw new CustomError("Failed to init repo");
-      }
-
-      return result;
     } catch (error: any) {
-      logger.error("[BoilerplateService] Failed to create boilerplate", {
+      logger.error("[BoilerplateService] Failed to fetch boilerplates", {
         error: error.message,
-        stack: error.stack,
       });
-      try {
-        if (!this.boilerplatesBasePath) throw new Error("BASE_DIR not set");
-        await fs.rm(repoPath, { recursive: true, force: true });
-
-        // Cleanup database record if it was created
-        if (result?.id) {
-          await prisma.boilerplate.delete({
-            where: { id: result.id },
-          });
-        }
-      } catch (cleanupError) {
-        console.error("Cleanup error during rollback:", cleanupError);
-      }
-      throw error;
+      throw new CustomError("Failed to fetch boilerplates");
     }
   }
+
+  async createBoilerplate(data: {
+    title: string;
+    description: string;
+    repositoryUrl: string;
+    framework: string;
+    language: string;
+    authorId: string;
+    categoryId?: string;
+    forkedFromId?: string;
+    currentVersion?: string;
+    latestVersionNumber?: string;
+    readme?: string;
+    coverImage?: string;
+    license?: string;
+    complexity?: string;
+    views?: number;
+  }) {
+    if (
+      !data.title ||
+      !data.authorId ||
+      !data.repositoryUrl ||
+      !data.framework ||
+      !data.language
+    ) {
+      throw new CustomError("Missing required fields");
+    }
+  
+    const sanitizedTitle = data.title.replace(/[^a-zA-Z0-9-_]/g, "-");
+    const defaultTags = [data.framework, data.language].filter(Boolean); // basic default tags
+  
+    try {
+      const result = await prisma.boilerplate.create({
+        data: {
+          title: sanitizedTitle,
+          description: data.description,
+          repositoryUrl: data.repositoryUrl,
+          framework: data.framework,
+          language: data.language,
+          stars: 0,
+          downloads: 0,
+          // views: data.views ?? 0,
+          tags: defaultTags,
+          visibility: "PUBLIC",
+          isSynced: false,
+          currentVersion: data.currentVersion || "1.0.0",
+          latestVersionNumber: data.latestVersionNumber || "1.0.0",
+          // readme: data.readme || null,
+          // coverImage: data.coverImage || null,
+          // license: data.license || "MIT",
+          // complexity: data.complexity || "INTERMEDIATE",
+          authorId: data.authorId,
+          categoryId: data.categoryId || null,
+          forkedFromId: data.forkedFromId || null,
+        },
+        include: {
+          author: true,
+          files: true,
+          likes: true,
+          comments: true,
+        },
+      });
+  
+      if (!result) throw new CustomError("Failed to create boilerplate");
+  
+      logger.info("[BoilerplateService] Boilerplate record created", { result });
+      return result;
+    } catch (error: any) {
+      logger.error("[BoilerplateService] Failed to create boilerplate", error);
+      throw new CustomError("Failed to create boilerplate");
+    }
+  }
+  
 
   async updateBoilerplate(
     id: string,
@@ -190,25 +147,41 @@ export class BoilerplateService {
       tags?: string[];
     }
   ) {
-    return prisma.boilerplate.update({
-      where: { id },
-      data: {
-        ...data,
-        tags: data.tags || undefined,
-      },
-      include: {
-        author: true,
-        files: true,
-        likes: true,
-      },
-    });
+    try {
+      return await prisma.boilerplate.update({
+        where: { id },
+        data: {
+          ...data,
+          tags: data.tags || undefined,
+        },
+        include: {
+          author: true,
+          files: true,
+          likes: true,
+        },
+      });
+    } catch (error: any) {
+      logger.error("[BoilerplateService] Failed to update boilerplate", {
+        error: error.message,
+        id,
+      });
+      throw new CustomError("Failed to update boilerplate");
+    }
   }
 
   async deleteBoilerplate(id: string) {
-    await prisma.file.deleteMany({ where: { boilerplateId: id } });
-    await prisma.userLikes.deleteMany({ where: { boilerplateId: id } });
+    try {
+      await prisma.file.deleteMany({ where: { boilerplateId: id } });
+      await prisma.userLikes.deleteMany({ where: { boilerplateId: id } });
 
-    return prisma.boilerplate.delete({ where: { id } });
+      return await prisma.boilerplate.delete({ where: { id } });
+    } catch (error: any) {
+      logger.error("[BoilerplateService] Failed to delete boilerplate", {
+        error: error.message,
+        id,
+      });
+      throw new CustomError("Failed to delete boilerplate");
+    }
   }
 
   async findBoilerplatesWithCursor({
@@ -250,16 +223,26 @@ export class BoilerplateService {
     const orderByCondition: Prisma.BoilerplateOrderByWithRelationInput =
       orderBy || { createdAt: "desc" };
 
-    return prisma.boilerplate.findMany({
-      where: whereConditions,
-      orderBy: orderByCondition,
-      take: first,
-      include: {
-        author: true,
-        likes: true,
-        files: true,
-      },
-    });
+    try {
+      return await prisma.boilerplate.findMany({
+        where: whereConditions,
+        orderBy: orderByCondition,
+        take: first,
+        include: {
+          author: true,
+          likes: true,
+          files: true,
+        },
+      });
+    } catch (error: any) {
+      logger.error(
+        "[BoilerplateService] Failed to fetch boilerplates with cursor",
+        {
+          error: error.message,
+        }
+      );
+      throw new CustomError("Failed to fetch boilerplates with cursor");
+    }
   }
 
   async countBoilerplates(where?: {
@@ -286,7 +269,14 @@ export class BoilerplateService {
       if (where.tags?.length) whereConditions.tags = { hasSome: where.tags };
     }
 
-    return prisma.boilerplate.count({ where: whereConditions });
+    try {
+      return await prisma.boilerplate.count({ where: whereConditions });
+    } catch (error: any) {
+      logger.error("[BoilerplateService] Failed to count boilerplates", {
+        error: error.message,
+      });
+      throw new CustomError("Failed to count boilerplates");
+    }
   }
 
   async likeBoilerplate(boilerplateId: string, userId: string) {
@@ -301,7 +291,7 @@ export class BoilerplateService {
       });
 
       if (existingLike)
-        throw new Error("User has already liked this boilerplate");
+        throw new CustomError("User has already liked this boilerplate");
 
       await prisma.$transaction([
         prisma.userLikes.create({
@@ -313,7 +303,7 @@ export class BoilerplateService {
         }),
       ]);
 
-      return prisma.boilerplate.findUnique({
+      return await prisma.boilerplate.findUnique({
         where: { id: boilerplateId },
         include: {
           author: true,
@@ -342,7 +332,8 @@ export class BoilerplateService {
         },
       });
 
-      if (!existingLike) throw new Error("User has not liked this boilerplate");
+      if (!existingLike)
+        throw new CustomError("User has not liked this boilerplate");
 
       await prisma.$transaction([
         prisma.userLikes.delete({
@@ -359,7 +350,7 @@ export class BoilerplateService {
         }),
       ]);
 
-      return prisma.boilerplate.findUnique({
+      return await prisma.boilerplate.findUnique({
         where: { id: boilerplateId },
         include: {
           author: true,
@@ -377,7 +368,6 @@ export class BoilerplateService {
     }
   }
 
-  // Add this method to your BoilerplateService class
   async findAllCategories() {
     try {
       return await prisma.category.findMany({
@@ -385,11 +375,11 @@ export class BoilerplateService {
           name: "asc",
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       logger.error("[BoilerplateService] Failed to fetch categories", {
         error: error instanceof Error ? error.message : "Unknown error",
       });
-      throw error;
+      throw new CustomError("Failed to fetch categories");
     }
   }
 }

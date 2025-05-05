@@ -1,6 +1,7 @@
 import { ObjectType, Field, ID, Int, InputType } from '@nestjs/graphql';
 import { GraphQLUpload, FileUpload } from "graphql-upload-minimal";
 
+// FileInput type
 @InputType("FileInputType")
 export class FileInput {
   @Field()
@@ -16,7 +17,7 @@ export class FileInput {
   type!: string;
 }
 
-
+// Boilerplate GraphQL Object Type
 @ObjectType('BoilerplateType')
 export class Boilerplate {
   @Field(() => ID)
@@ -65,7 +66,7 @@ export class Boilerplate {
   likedByUsers!: string[];
 }
 
-
+// Boilerplate Input Type
 @InputType("BoilerplateInputType")
 export class BoilerplateInput {
   @Field()
@@ -102,6 +103,7 @@ export class BoilerplateInput {
   zipFilePath?: string;
 }
 
+// Boilerplate Query Filters and Ordering
 @InputType("BoilerplateWhereInputType")
 export class BoilerplateWhereInput {
   @Field({ nullable: true })
@@ -123,6 +125,7 @@ export class BoilerplateWhereInput {
   tags?: string[];
 }
 
+// Boilerplate OrderBy Input Type
 @InputType("BoilerplateOrderByInputType")
 export class BoilerplateOrderByInput {
   @Field(() => String, { nullable: true })
@@ -141,6 +144,7 @@ export class BoilerplateOrderByInput {
   updatedAt?: "asc" | "desc";
 }
 
+// PageInfo Object Type for Pagination
 @ObjectType()
 export class PageInfo {
   @Field(() => Boolean)
@@ -150,6 +154,7 @@ export class PageInfo {
   endCursor?: string;
 }
 
+// Boilerplate Edge Object Type for Pagination
 @ObjectType()
 export class BoilerplateEdge {
   @Field(() => Boilerplate)
@@ -159,6 +164,7 @@ export class BoilerplateEdge {
   cursor!: string;
 }
 
+// Boilerplate Connection Object Type for Pagination
 @ObjectType()
 export class BoilerplateConnection {
   @Field(() => [BoilerplateEdge])
@@ -171,7 +177,7 @@ export class BoilerplateConnection {
   totalCount!: number;
 }
 
-
+// // Updated Boilerplate with Author and Related Fields (for Prisma query result)
 // type BoilerplateWithAuthor = Prisma.BoilerplateGetPayload<{
 //   include: {
 //     author: true;

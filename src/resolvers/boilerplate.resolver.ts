@@ -203,7 +203,6 @@ export class BoilerplateResolver {
       const boilerplate = await this.boilerplateService.createBoilerplate({
         ...data,
         authorId: user.sub,
-        zipFilePath,
       });
 
       if (!boilerplate || !boilerplate.id) {

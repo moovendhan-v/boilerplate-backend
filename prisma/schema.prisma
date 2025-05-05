@@ -1,106 +1,286 @@
-datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 model User {
-  id           String   @id @default(cuid()) @map("_id")
-  email        String   @unique
-  password     String?
+  id           String         @id @default(uuid())
+  email        String         @unique
   name         String?
   avatar       String?
-  role         String   @default("USER")
-  authProvider String   @default("EMAIL")
-  githubId     String?  @unique
+  role         UserRole       @default(USER)
+  authProvider AuthProvider   @default(GITHUB)
+  githubId     String?        @unique
   githubToken  String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Relations
-  boilerplates Boilerplate[] @relation("UserBoilerplates")
-  likes        UserLikes[]
+  googleId     String?        @unique
+  bio          String?
+  website      String?
+  location     String?
+  isVerified   Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  boilerplates Boilerplate[]  @relation("UserBoilerplates")
+  collections  Collection[]
   comments     Comment[]
+  activities   UserActivity[]
+  likes        UserLikes[]
+
+  @@index([email])
+  @@index([authProvider])
 }
 
 model Category {
-  id          String  @id @default(cuid()) @map("_id")
-  name        String
-  description String
-  slug        String  @unique
-  icon        String?
-  color       String?
-
-  // Relations
+  id           String        @id @default(uuid())
+  name         String
+  description  String
+  slug         String        @unique
+  icon         String?
+  color        String?
+  parentId     String?
+  displayOrder Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   boilerplates Boilerplate[]
+  parent       Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children     Category[]    @relation("CategoryHierarchy")
+
+  @@index([slug])
+  @@index([parentId])
 }
 
 model Boilerplate {
-  id                  String    @id @default(cuid()) @map("_id")
+  id                  String                   @id @default(uuid())
   title               String
   description         String
+  shortDescription    String?                  @db.VarChar(280)
   repositoryUrl       String
   framework           String
   language            String
-  tags                String[]
-  stars               Int       @default(0)
-  downloads           Int       @default(0)
-  visibility          String    @default("PUBLIC") // PUBLIC or PRIVATE
-  isSynced            Boolean   @default(false)
+  stars               Int                      @default(0)
+  downloads           Int                      @default(0)
+  views               Int                      @default(0)
+  visibility          Visibility               @default(PUBLIC)
+  isSynced            Boolean                  @default(false)
   lastSyncedAt        DateTime?
   authorId            String
   categoryId          String?
   forkedFromId        String?
-  currentVersion      String    @default("1.0.0") // Current version number as string
-  latestVersionNumber String    @default("1.0.0") // Store latest version number directly
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  currentVersion      String                   @default("1.0.0")
+  latestVersionNumber String                   @default("1.0.0")
+  readme              String?
+  coverImage          String?
+  license             String?
+  complexity          Complexity?              @default(INTERMEDIATE)
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+  author              User                     @relation("UserBoilerplates", fields: [authorId], references: [id])
+  category            Category?                @relation(fields: [categoryId], references: [id])
+  forkedFrom          Boilerplate?             @relation("BoilerplateForks", fields: [forkedFromId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  forks               Boilerplate[]            @relation("BoilerplateForks")
+  analytics           BoilerplateAnalytics[]
+  tagRelations        BoilerplateTags[]
+  versions            BoilerplateVersion[]
+  collections         CollectionBoilerplates[]
+  comments            Comment[]
+  dependencies        Dependency[]
+  files               File[]
+  activities          UserActivity[]
+  likes               UserLikes[]
 
-  // Relations
-  author     User          @relation("UserBoilerplates", fields: [authorId], references: [id])
-  category   Category?     @relation(fields: [categoryId], references: [id])
-  forkedFrom Boilerplate?  @relation("BoilerplateForks", fields: [forkedFromId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  forks      Boilerplate[] @relation("BoilerplateForks")
-  likes      UserLikes[]
-  comments   Comment[]
-  files      File[]
+  @@index([authorId])
+  @@index([categoryId])
+  @@index([forkedFromId])
+  @@index([language, framework])
+  @@index([visibility])
+}
+
+model BoilerplateVersion {
+  id            String      @id @default(uuid())
+  boilerplateId String
+  versionNumber String
+  changelog     String?
+  releaseNotes  String?
+  commitHash    String?
+  createdAt     DateTime    @default(now())
+  boilerplate   Boilerplate @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+  files         File[]
+
+  @@unique([boilerplateId, versionNumber])
 }
 
 model File {
-  id            String @id @default(cuid()) @map("_id")
+  id            String              @id @default(uuid())
   name          String
   path          String
   content       String
   boilerplateId String
+  versionId     String?
+  contentType   String?
+  size          Int?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  boilerplate   Boilerplate         @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+  version       BoilerplateVersion? @relation(fields: [versionId], references: [id])
 
-  // Relations
-  boilerplate Boilerplate @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+  @@unique([boilerplateId, path])
+  @@index([boilerplateId])
+  @@index([versionId])
 }
 
 model Comment {
-  id            String   @id @default(cuid()) @map("_id")
+  id            String      @id @default(uuid())
   userId        String
   boilerplateId String
   content       String
-  createdAt     DateTime @default(now())
+  parentId      String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  boilerplate   Boilerplate @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+  parent        Comment?    @relation("CommentReplies", fields: [parentId], references: [id])
+  replies       Comment[]   @relation("CommentReplies")
+  user          User        @relation(fields: [userId], references: [id])
 
-  // Relations
-  user        User        @relation(fields: [userId], references: [id])
-  boilerplate Boilerplate @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([boilerplateId])
+  @@index([parentId])
 }
 
 model UserLikes {
-  id            String   @id @default(cuid()) @map("_id")
+  id            String      @id @default(uuid())
   userId        String
   boilerplateId String
-  createdAt     DateTime @default(now())
-
-  // Relations
-  user        User        @relation(fields: [userId], references: [id])
-  boilerplate Boilerplate @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  boilerplate   Boilerplate @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id])
 
   @@unique([userId, boilerplateId])
+}
+
+model Collection {
+  id           String                   @id @default(uuid())
+  name         String
+  description  String?
+  userId       String
+  isPublic     Boolean                  @default(false)
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  user         User                     @relation(fields: [userId], references: [id])
+  boilerplates CollectionBoilerplates[]
+  activities   UserActivity[]
+
+  @@index([userId])
+}
+
+model CollectionBoilerplates {
+  id            String      @id @default(uuid())
+  collectionId  String
+  boilerplateId String
+  addedAt       DateTime    @default(now())
+  boilerplate   Boilerplate @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+  collection    Collection  @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, boilerplateId])
+}
+
+model BoilerplateAnalytics {
+  id             String      @id @default(uuid())
+  boilerplateId  String
+  date           DateTime    @db.Date
+  views          Int         @default(0)
+  downloads      Int         @default(0)
+  uniqueVisitors Int         @default(0)
+  boilerplate    Boilerplate @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+
+  @@unique([boilerplateId, date])
+  @@index([boilerplateId])
+}
+
+model UserActivity {
+  id            String       @id @default(uuid())
+  userId        String
+  activityType  ActivityType
+  boilerplateId String?
+  collectionId  String?
+  timestamp     DateTime     @default(now())
+  boilerplate   Boilerplate? @relation(fields: [boilerplateId], references: [id])
+  collection    Collection?  @relation(fields: [collectionId], references: [id])
+  user          User         @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([boilerplateId])
+  @@index([activityType])
+  @@index([timestamp])
+}
+
+model Tag {
+  id           String            @id @default(uuid())
+  name         String            @unique
+  slug         String            @unique
+  createdAt    DateTime          @default(now())
+  boilerplates BoilerplateTags[]
+}
+
+model BoilerplateTags {
+  id            String      @id @default(uuid())
+  boilerplateId String
+  tagId         String
+  boilerplate   Boilerplate @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+  tag           Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([boilerplateId, tagId])
+}
+
+model Dependency {
+  id            String         @id @default(uuid())
+  name          String
+  version       String
+  type          DependencyType
+  boilerplateId String
+  boilerplate   Boilerplate    @relation(fields: [boilerplateId], references: [id], onDelete: Cascade)
+
+  @@index([boilerplateId])
+  @@index([name])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum AuthProvider {
+  EMAIL
+  GITHUB
+  GOOGLE
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  UNLISTED
+}
+
+enum Complexity {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum ActivityType {
+  VIEW
+  DOWNLOAD
+  COMMENT
+  LIKE
+  FORK
+  CREATE
+}
+
+enum DependencyType {
+  PACKAGE
+  LIBRARY
+  FRAMEWORK
 }

@@ -1,0 +1,259 @@
+// Users and Authentication
+Table User {
+  id uuid [pk, unique, not null]
+  email varchar [unique, not null]
+  name varchar
+  avatar varchar
+  role enum('USER', 'ADMIN', 'MODERATOR') [not null, default: 'USER']
+  authProvider enum('GITHUB') [not null, default: 'EMAIL']
+  githubId varchar [unique]
+  githubToken varchar
+  googleId varchar [unique]
+  bio text
+  website varchar
+  location varchar
+  isVerified boolean [not null, default: false]
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null]
+
+  indexes {
+    email
+    authProvider
+  }
+}
+
+// Categories for organizing boilerplates
+Table Category {
+  id uuid [pk, unique, not null]
+  name varchar [not null]
+  description varchar [not null]
+  slug varchar [unique, not null]
+  icon varchar
+  color varchar
+  parentId uuid // For nested categories
+  displayOrder int [default: 0] // For custom ordering
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null]
+
+  indexes {
+    slug
+    parentId
+  }
+}
+
+// Main boilerplate table
+Table Boilerplate {
+  id uuid [pk, unique, not null]
+  title varchar [not null]
+  description text [not null]
+  shortDescription varchar(280) // For previews and listings
+  repositoryUrl varchar [not null]
+  framework varchar [not null]
+  language varchar [not null]
+  tags text[] [not null]
+  stars integer [not null, default: 0]
+  downloads integer [not null, default: 0]
+  views integer [not null, default: 0]
+  visibility enum('PUBLIC', 'PRIVATE', 'UNLISTED') [not null, default: 'PUBLIC']
+  isSynced boolean [not null, default: false]
+  lastSyncedAt timestamp
+  authorId uuid [not null]
+  categoryId uuid
+  forkedFromId uuid
+  currentVersion varchar [not null, default: '1.0.0']
+  latestVersionNumber varchar [not null, default: '1.0.0']
+  readme text // Store README content separately for better performance
+  coverImage varchar
+  license varchar
+  complexity enum('BEGINNER', 'INTERMEDIATE', 'ADVANCED') [default: 'INTERMEDIATE']
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null]
+  
+  indexes {
+    authorId
+    categoryId
+    forkedFromId
+    (language, framework) // Common search pattern
+    visibility
+    tags
+  }
+}
+
+// Versioning system for boilerplates
+Table BoilerplateVersion {
+  id uuid [pk, unique, not null]
+  boilerplateId uuid [not null]
+  versionNumber varchar [not null]
+  changelog text
+  releaseNotes text
+  commitHash varchar
+  createdAt timestamp [not null, default: `now()`]
+  
+  indexes {
+    (boilerplateId, versionNumber) [unique]
+  }
+}
+
+// Files associated with boilerplates
+Table File {
+  id uuid [pk, unique, not null]
+  name varchar [not null]
+  path varchar [not null]
+  content text [not null]
+  boilerplateId uuid [not null]
+  versionId uuid // Optional - for version-specific files
+  contentType varchar // MIME type
+  size integer // Size in bytes
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null]
+  
+  indexes {
+    boilerplateId
+    versionId
+    (boilerplateId, path) [unique] // Ensure unique paths within a boilerplate
+  }
+}
+
+// Comments on boilerplates
+Table Comment {
+  id uuid [pk, unique, not null]
+  userId uuid [not null]
+  boilerplateId uuid [not null]
+  content text [not null]
+  parentId uuid // For threaded comments
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null]
+  
+  indexes {
+    userId
+    boilerplateId
+    parentId
+  }
+}
+
+// User likes/stars for boilerplates
+Table UserLikes {
+  id uuid [pk, unique, not null]
+  userId uuid [not null]
+  boilerplateId uuid [not null]
+  createdAt timestamp [not null, default: `now()`]
+  
+  indexes {
+    (userId, boilerplateId) [unique]
+  }
+}
+
+// User collections to organize boilerplates
+Table Collection {
+  id uuid [pk, unique, not null]
+  name varchar [not null]
+  description text
+  userId uuid [not null]
+  isPublic boolean [not null, default: false]
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null]
+  
+  indexes {
+    userId
+  }
+}
+
+// Many-to-many relationship for collections and boilerplates
+Table CollectionBoilerplates {
+  id uuid [pk, unique, not null]
+  collectionId uuid [not null]
+  boilerplateId uuid [not null]
+  addedAt timestamp [not null, default: `now()`]
+  
+  indexes {
+    (collectionId, boilerplateId) [unique]
+  }
+}
+
+// Analytics for boilerplate usage
+Table BoilerplateAnalytics {
+  id uuid [pk, unique, not null]
+  boilerplateId uuid [not null]
+  date date [not null]
+  views integer [not null, default: 0]
+  downloads integer [not null, default: 0]
+  uniqueVisitors integer [not null, default: 0]
+  
+  indexes {
+    (boilerplateId, date) [unique]
+  }
+}
+
+// User activity tracking
+Table UserActivity {
+  id uuid [pk, unique, not null]
+  userId uuid [not null]
+  activityType enum('VIEW', 'DOWNLOAD', 'COMMENT', 'LIKE', 'FORK', 'CREATE') [not null]
+  boilerplateId uuid
+  collectionId uuid
+  timestamp timestamp [not null, default: `now()`]
+  
+  indexes {
+    userId
+    boilerplateId
+    activityType
+    timestamp
+  }
+}
+
+// Tags system with normalized structure
+Table Tag {
+  id uuid [pk, unique, not null]
+  name varchar [not null, unique]
+  slug varchar [not null, unique]
+  createdAt timestamp [not null, default: `now()`]
+}
+
+// Many-to-many relationship for boilerplates and tags
+Table BoilerplateTags {
+  id uuid [pk, unique, not null]
+  boilerplateId uuid [not null]
+  tagId uuid [not null]
+  
+  indexes {
+    (boilerplateId, tagId) [unique]
+  }
+}
+
+// Dependencies tracking for boilerplates
+Table Dependency {
+  id uuid [pk, unique, not null]
+  name varchar [not null]
+  version varchar [not null]
+  type enum('PACKAGE', 'LIBRARY', 'FRAMEWORK') [not null]
+  boilerplateId uuid [not null]
+  
+  indexes {
+    boilerplateId
+    name
+  }
+}
+
+// Relationships
+Ref: "Boilerplate"."authorId" > "User"."id"
+Ref: "Boilerplate"."categoryId" > "Category"."id"
+Ref: "Boilerplate"."forkedFromId" > "Boilerplate"."id"
+Ref: "Category"."parentId" > "Category"."id"
+Ref: "BoilerplateVersion"."boilerplateId" > "Boilerplate"."id" [delete: cascade]
+Ref: "File"."boilerplateId" > "Boilerplate"."id" [delete: cascade]
+Ref: "File"."versionId" > "BoilerplateVersion"."id"
+Ref: "Comment"."userId" > "User"."id"
+Ref: "Comment"."boilerplateId" > "Boilerplate"."id" [delete: cascade]
+Ref: "Comment"."parentId" > "Comment"."id"
+Ref: "UserLikes"."userId" > "User"."id"
+Ref: "UserLikes"."boilerplateId" > "Boilerplate"."id" [delete: cascade]
+Ref: "Collection"."userId" > "User"."id"
+Ref: "CollectionBoilerplates"."collectionId" > "Collection"."id" [delete: cascade]
+Ref: "CollectionBoilerplates"."boilerplateId" > "Boilerplate"."id" [delete: cascade]
+Ref: "BoilerplateAnalytics"."boilerplateId" > "Boilerplate"."id" [delete: cascade]
+Ref: "UserActivity"."userId" > "User"."id"
+Ref: "UserActivity"."boilerplateId" > "Boilerplate"."id"
+Ref: "UserActivity"."collectionId" > "Collection"."id"
+Ref: "BoilerplateTags"."boilerplateId" > "Boilerplate"."id" [delete: cascade]
+Ref: "BoilerplateTags"."tagId" > "Tag"."id" [delete: cascade]
+Ref: "Dependency"."boilerplateId" > "Boilerplate"."id" [delete: cascade]
