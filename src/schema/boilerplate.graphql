@@ -4,7 +4,7 @@ type Boilerplate {
   id: ID!
   title: String!
   description: String!
-  repositoryUrl: String!
+  repositoryUrl: String
   framework: String!
   language: String!
   tags: [String!]!
@@ -130,7 +130,7 @@ enum Sort {
 input CreateBoilerplateInput {
   title: String!
   description: String!
-  repositoryUrl: String!
+  repositoryUrl: String
   framework: String
   language: String!
   tags: [String!]!

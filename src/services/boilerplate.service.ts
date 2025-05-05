@@ -14,6 +14,12 @@ interface BoilerplateOrderByInput {
   updatedAt?: Prisma.SortOrder;
 }
 
+enum Complexity {
+  BEGINNER = "BEGINNER",
+  INTERMEDIATE = "INTERMEDIATE",
+  ADVANCED = "ADVANCED",
+}
+
 export class BoilerplateService {
   boilerplatesBasePath: string = process.env.BOILERPLATE_BASE_DIR || "";
 
@@ -35,7 +41,7 @@ export class BoilerplateService {
       throw new CustomError("Failed to fetch boilerplate");
     }
   }
-  
+
   async findBoilerplates(params: {
     skip?: number;
     take?: number;
@@ -66,7 +72,7 @@ export class BoilerplateService {
   async createBoilerplate(data: {
     title: string;
     description: string;
-    repositoryUrl: string;
+    repositoryUrl?: string;
     framework: string;
     language: string;
     authorId: string;
@@ -79,62 +85,104 @@ export class BoilerplateService {
     license?: string;
     complexity?: string;
     views?: number;
+    files?: Array<{
+      name: string;
+      path: string;
+      content: string;
+      contentType?: string;
+      size?: number;
+    }>;
   }) {
     if (
       !data.title ||
       !data.authorId ||
-      !data.repositoryUrl ||
       !data.framework ||
       !data.language
     ) {
       throw new CustomError("Missing required fields");
     }
-  
+
     const sanitizedTitle = data.title.replace(/[^a-zA-Z0-9-_]/g, "-");
-    const defaultTags = [data.framework, data.language].filter(Boolean); // basic default tags
-  
+
     try {
-      const result = await prisma.boilerplate.create({
-        data: {
-          title: sanitizedTitle,
-          description: data.description,
-          repositoryUrl: data.repositoryUrl,
-          framework: data.framework,
-          language: data.language,
-          stars: 0,
-          downloads: 0,
-          // views: data.views ?? 0,
-          tags: defaultTags,
-          visibility: "PUBLIC",
-          isSynced: false,
-          currentVersion: data.currentVersion || "1.0.0",
-          latestVersionNumber: data.latestVersionNumber || "1.0.0",
-          // readme: data.readme || null,
-          // coverImage: data.coverImage || null,
-          // license: data.license || "MIT",
-          // complexity: data.complexity || "INTERMEDIATE",
-          authorId: data.authorId,
-          categoryId: data.categoryId || null,
-          forkedFromId: data.forkedFromId || null,
-        },
-        include: {
-          author: true,
-          files: true,
-          likes: true,
-          comments: true,
-        },
+      // Create the boilerplate with a transaction to ensure all operations succeed or fail together
+      const result = await prisma.$transaction(async (tx) => {
+        // 1. First create the boilerplate
+        const boilerplate = await tx.boilerplate.create({
+          data: {
+            title: sanitizedTitle,
+            description: data.description,
+            repositoryUrl: data?.repositoryUrl,
+            framework: data.framework,
+            language: data.language,
+            stars: 0,
+            downloads: 0,
+            visibility: "PUBLIC",
+            isSynced: false,
+            readme: data.readme || null,
+            coverImage: data.coverImage || null,
+            license: data.license || "MIT",
+            complexity: (data.complexity as Complexity) || "INTERMEDIATE",
+            authorId: data.authorId,
+            categoryId: data.categoryId || null,
+            forkedFromId: data.forkedFromId || null,
+          },
+        });
+        logger.info("[BoilerplateService] Boilerplate record created", {
+          boilerplate,
+        });
+
+        // 2. Create version for the boilerplate if it doesn't exist
+        const version = await tx.boilerplateVersion.create({
+          data: {
+            boilerplateId: boilerplate.id,
+            versionNumber: boilerplate.currentVersion,
+            changelog: "Initial version",
+          },
+        });
+        logger.info("[BoilerplateService] Boilerplate version created", {
+          version,
+        });
+
+        // 3. Create files if any are provided
+        if (data.files && data.files.length > 0) {
+          await Promise.all(
+            data.files.map((file) =>
+              tx.file.create({
+                data: {
+                  name: file.name,
+                  path: file.path,
+                  content: file.content,
+                  boilerplateId: boilerplate.id,
+                },
+              })
+            )
+          );
+        }
+
+        // Return the created boilerplate with related data
+        return tx.boilerplate.findUnique({
+          where: { id: boilerplate.id },
+          include: {
+            author: true,
+            files: true,
+            likes: true,
+            comments: true,
+            // versions: true,
+          },
+        });
       });
-  
+
       if (!result) throw new CustomError("Failed to create boilerplate");
-  
-      logger.info("[BoilerplateService] Boilerplate record created", { result });
+      logger.info("[BoilerplateService] Boilerplate record created", {
+        result,
+      });
       return result;
     } catch (error: any) {
       logger.error("[BoilerplateService] Failed to create boilerplate", error);
-      throw new CustomError("Failed to create boilerplate");
+      throw new CustomError(`Failed to create boilerplate: ${error.message}`);
     }
   }
-  
 
   async updateBoilerplate(
     id: string,
@@ -144,7 +192,7 @@ export class BoilerplateService {
       repositoryUrl?: string;
       framework?: string;
       language?: string;
-      tags?: string[];
+      // tags?: string[];
     }
   ) {
     try {
@@ -152,7 +200,7 @@ export class BoilerplateService {
         where: { id },
         data: {
           ...data,
-          tags: data.tags || undefined,
+          // tags: data.tags || undefined,
         },
         include: {
           author: true,
@@ -198,7 +246,7 @@ export class BoilerplateService {
       framework?: string;
       language?: string;
       authorId?: string;
-      tags?: string[];
+      // tags?: string[];
     };
     orderBy?: BoilerplateOrderByInput;
   }) {
@@ -215,7 +263,7 @@ export class BoilerplateService {
       if (where.framework) whereConditions.framework = where.framework;
       if (where.language) whereConditions.language = where.language;
       if (where.authorId) whereConditions.authorId = where.authorId;
-      if (where.tags?.length) whereConditions.tags = { hasSome: where.tags };
+      // if (where.tags?.length) whereConditions.tags = { hasSome: where.tags };
     }
 
     if (afterId) whereConditions.id = { gt: afterId };
@@ -251,7 +299,7 @@ export class BoilerplateService {
     framework?: string;
     language?: string;
     authorId?: string;
-    tags?: string[];
+    // tags?: string[];
   }) {
     const whereConditions: Prisma.BoilerplateWhereInput = {};
 
@@ -266,7 +314,7 @@ export class BoilerplateService {
       if (where.framework) whereConditions.framework = where.framework;
       if (where.language) whereConditions.language = where.language;
       if (where.authorId) whereConditions.authorId = where.authorId;
-      if (where.tags?.length) whereConditions.tags = { hasSome: where.tags };
+      // if (where.tags?.length) whereConditions.tags = { hasSome: where.tags };
     }
 
     try {

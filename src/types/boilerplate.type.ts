@@ -6,13 +6,10 @@ import { GraphQLUpload, FileUpload } from "graphql-upload-minimal";
 export class FileInput {
   @Field()
   name!: string;
-
   @Field()
   path!: string;
-
   @Field()
   content!: string;
-
   @Field()
   type!: string;
 }
@@ -22,48 +19,37 @@ export class FileInput {
 export class Boilerplate {
   @Field(() => ID)
   id!: string;
-
   @Field()
   title!: string;
-
   @Field()
   description!: string;
-
   @Field()
-  repositoryUrl!: string;
-
+  repositoryUrl?: string;
   @Field()
-  framework!: string;
-
+  framework?: string;
   @Field()
   language!: string;
-
-  @Field(() => [String])
-  tags!: string[];
-
+  
+  // Change this line to make it properly nullable in GraphQL schema
+  @Field(() => [String], { nullable: true }) 
+  tags?: string[];
+  
   @Field(() => Int)
-  stars!: number;
-
+  stars?: number;
   @Field(() => Int)
-  downloads!: number;
-
+  downloads?: number;
   @Field(() => String)
   authorId!: string;
-
   @Field(() => [FileInput])
-  files!: FileInput[];
-
+  files?: FileInput[];
   @Field(() => String)
-  createdAt!: string;
-
+  createdAt?: string;
   @Field(() => String)
-  updatedAt!: string;
-
+  updatedAt?: string;
   @Field(() => [String], { nullable: true })
   likedBy?: string[];
-
   @Field(() => [String], { description: 'List of user IDs who liked this boilerplate' })
-  likedByUsers!: string[];
+  likedByUsers?: string[];
 }
 
 // Boilerplate Input Type
@@ -76,7 +62,7 @@ export class BoilerplateInput {
   description!: string;
 
   @Field()
-  repositoryUrl!: string;
+  repositoryUrl?: string;
 
   @Field()
   framework!: string;
@@ -85,10 +71,10 @@ export class BoilerplateInput {
   language!: string;
 
   @Field()
-  repoPath!: string;
+  repoPath?: string;
 
   @Field()
-  category!: string;
+  category?: string;
 
   @Field()
   authorId!: string;

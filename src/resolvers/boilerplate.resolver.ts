@@ -215,11 +215,7 @@ export class BoilerplateResolver {
 
       return boilerplate;
     } catch (error: any) {
-      logger.error("[Boilerplate Resolver] Failed to create boilerplate", {
-        userId: user.sub,
-        error: error.message,
-        stack: error.stack,
-      });
+      logger.error("[Boilerplate Resolver] Failed to create boilerplate", {error});
 
       if (error instanceof CustomError) {
         throw error;
