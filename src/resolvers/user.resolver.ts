@@ -119,19 +119,6 @@ export class UserResolver {
     return await userService.updateProfile(user.sub, input);
   }
 
-  @Mutation(() => User)
-  async changePassword(
-    @Args("input")
-    input: {
-      currentPassword: string;
-      newPassword: string;
-    },
-    @Context() context: AppContext
-  ) {
-    const { user } = context;
-    if (!user) throw new AuthenticationError();
-    return await userService.changePassword(user.sub, input);
-  }
 
   @Mutation(() => Object)
   async refreshToken(@Context() context: AppContext) {
@@ -224,11 +211,6 @@ export const userResolvers = {
       args: { input: { name?: string; email?: string } },
       context: AppContext
     ) => UserResolver.instance.updateProfile(args.input, context),
-    changePassword: (
-      _: unknown,
-      args: { input: { currentPassword: string; newPassword: string } },
-      context: AppContext
-    ) => UserResolver.instance.changePassword(args.input, context),
     refreshToken: (_: unknown, _args: unknown, context: AppContext) =>
       UserResolver.instance.refreshToken(context),
     logout: (_: unknown, _args: unknown, context: AppContext) =>

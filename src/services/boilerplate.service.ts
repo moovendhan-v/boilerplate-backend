@@ -1,14 +1,21 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import logger from "../utils/logger";
-import path from "path";
-import fs from "fs/promises";
-import { CustomError } from "../utils/errorHandler";
+import {
+  CustomError,
+  DatabaseError,
+  ValidationError,
+} from "../utils/errorHandler";
+import {
+  BoilerplateWhereInput,
+  TextMatchMode,
+} from "../types/boilerplate.type";
 
 const prisma = new PrismaClient();
 
 interface BoilerplateOrderByInput {
   title?: Prisma.SortOrder;
   stars?: Prisma.SortOrder;
+  likeCount?: Prisma.SortOrder;
   downloads?: Prisma.SortOrder;
   createdAt?: Prisma.SortOrder;
   updatedAt?: Prisma.SortOrder;
@@ -68,7 +75,6 @@ export class BoilerplateService {
       throw new CustomError("Failed to fetch boilerplates");
     }
   }
-
   async createBoilerplate(data: {
     title: string;
     description: string;
@@ -93,12 +99,7 @@ export class BoilerplateService {
       size?: number;
     }>;
   }) {
-    if (
-      !data.title ||
-      !data.authorId ||
-      !data.framework ||
-      !data.language
-    ) {
+    if (!data.title || !data.authorId || !data.framework || !data.language) {
       throw new CustomError("Missing required fields");
     }
 
@@ -168,7 +169,6 @@ export class BoilerplateService {
             files: true,
             likes: true,
             comments: true,
-            // versions: true,
           },
         });
       });
@@ -291,6 +291,234 @@ export class BoilerplateService {
       );
       throw new CustomError("Failed to fetch boilerplates with cursor");
     }
+  }
+
+  // Search boilerplates with fuzzy matching
+  async searchBoilerplates({
+    query,
+    matchMode = TextMatchMode.CONTAINS,
+    minRelevanceScore = 0.5,
+    pagination: { first, afterId },
+    where,
+    orderBy,
+  }: {
+    query?: string;
+    matchMode?: TextMatchMode;
+    minRelevanceScore?: number;
+    pagination: { first: number; afterId?: string };
+    where?: BoilerplateWhereInput;
+    orderBy?: BoilerplateOrderByInput;
+  }) {
+    try {
+      const whereClause = this.buildWhereClause(where);
+  
+      // Apply cursor-based pagination
+      if (afterId) {
+        whereClause.id = { gt: afterId };
+      }
+  
+      // Construct search conditions based on matchMode
+      const searchConditions: any[] = [];
+      if (query) {
+        switch (matchMode) {
+          case TextMatchMode.EXACT:
+            searchConditions.push(
+              { title: { equals: query } },
+              { description: { equals: query } },
+            );
+            break;
+          case TextMatchMode.CONTAINS:
+            searchConditions.push(
+              { title: { contains: query, mode: 'insensitive' } },
+              { description: { contains: query, mode: 'insensitive' } }
+            );
+            break;
+          case TextMatchMode.STARTS_WITH:
+            searchConditions.push(
+              { title: { startsWith: query, mode: 'insensitive' } },
+              { description: { startsWith: query, mode: 'insensitive' } }
+            );
+            break;
+          case TextMatchMode.ENDS_WITH:
+            searchConditions.push(
+              { title: { endsWith: query, mode: 'insensitive' } },
+              { description: { endsWith: query, mode: 'insensitive' } }
+            );
+            break;
+          case TextMatchMode.REGEX:
+            try {
+              const regex = new RegExp(query, 'i');
+              searchConditions.push(
+                { title: { matches: regex } },
+                { description: { matches: regex } }
+              );
+            } catch (e) {
+              logger.warn('[BoilerplateService] Invalid regex pattern', { query });
+              throw new ValidationError('Invalid regex pattern');
+            }
+            break;
+          case TextMatchMode.FUZZY:
+            // For fuzzy search, consider using PostgreSQL's trigram similarity
+            // This requires raw SQL queries and enabling the pg_trgm extension
+            // Example:
+            // const results = await prisma.$queryRaw`SELECT * FROM "Boilerplate" WHERE similarity(title, ${query}) > 0.3 ORDER BY similarity(title, ${query}) DESC LIMIT ${first}`;
+            // return { items: results.map(item => ({ item, score: 1.0 })), totalCount: results.length };
+            break;
+          default:
+            break;
+        }
+  
+        if (searchConditions.length > 0) {
+          whereClause.OR = searchConditions;
+        }
+      }
+  
+      const orderByClause = this.buildOrderByClause(orderBy);
+  
+      const results = await prisma.boilerplate.findMany({
+        take: first,
+        where: whereClause,
+        orderBy: orderByClause,
+        include: {
+          likes: true,
+          author: true,
+        },
+      });
+  
+      // Compute relevance scores if a query is provided
+      const items = results.map((item) => {
+        let score = 1.0;
+        if (query) {
+          const titleMatch = item.title?.toLowerCase().includes(query.toLowerCase());
+          const descriptionMatch = item.description?.toLowerCase().includes(query.toLowerCase());
+          score = 0;
+          if (titleMatch) score += 0.6;
+          if (descriptionMatch) score += 0.4;
+        }
+        return { item, score: Math.min(score, 1.0) };
+      });
+  
+      // Filter by minRelevanceScore
+      const filteredItems = items.filter(({ score }) => score >= minRelevanceScore);
+  
+      return {
+        items: filteredItems,
+        totalCount: filteredItems.length,
+      };
+    } catch (error: any) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+  
+      logger.error('[BoilerplateService] Error searching boilerplates', {
+        query,
+        matchMode,
+        minRelevanceScore,
+        pagination: { first, afterId },
+        filters: where,
+        orderBy,
+        error: error.message,
+      });
+  
+      throw new DatabaseError(`Failed to search boilerplates: ${error.message}`);
+    }
+  }
+
+  // Helper method to build where clause
+  private buildWhereClause(
+    where?: BoilerplateWhereInput
+  ): Prisma.BoilerplateWhereInput {
+    const whereClause: Prisma.BoilerplateWhereInput = {};
+
+    if (!where) return whereClause;
+
+    // Basic filters
+    if (where.title) {
+      whereClause.title = {
+        contains: where.title,
+        mode: "insensitive",
+      };
+    }
+
+    if (where.description) {
+      whereClause.description = {
+        contains: where.description,
+        mode: "insensitive",
+      };
+    }
+
+    if (where.authorId) {
+      whereClause.authorId = where.authorId;
+    }
+
+    // Categories filter
+    // if (where.categories) {
+    //   const categoryFilter: BoilerplateCategoriesFilter = where.categories;
+
+    //   // Filter by all categories (AND)
+    //   // if (categoryFilter.every?.length) {
+    //   //   whereClause.categoryId = {
+    //   //     in: {
+    //   //       categoryId: {
+    //   //         in: categoryFilter.every,
+    //   //       },
+    //   //     },
+    //   //   };
+    //   // }
+
+    //   // Filter by some categories (OR)
+    //   // if (categoryFilter.some?.length) {
+    //   //   whereClause.categories = {
+    //   //     some: {
+    //   //       id: {
+    //   //         in: categoryFilter.some,
+    //   //       },
+    //   //     },
+    //   //   };
+    //   // }
+    // }
+
+    // Likes filter
+    // if (where.likes) {
+    //   const likesFilter: BoilerplateLikesFilter = where.likes;
+
+    //   if (likesFilter.byUser) {
+    //     whereClause.likes = {
+    //       some: {
+    //         userId: likesFilter.byUser,
+    //       },
+    //     };
+    //   }
+
+    //   if (likesFilter.minCount !== undefined) {
+    //     whereClause.likeCount = {
+    //       gte: likesFilter.minCount,
+    //     };
+    //   }
+    // }
+
+    return whereClause;
+  }
+
+  private buildOrderByClause(
+    orderBy?: BoilerplateOrderByInput
+  ): Prisma.BoilerplateOrderByWithRelationInput {
+    if (!orderBy) return { createdAt: "desc" };
+
+    const orderByClause: Prisma.BoilerplateOrderByWithRelationInput = {};
+
+    if (orderBy.title) orderByClause.title = orderBy.title;
+    if (orderBy.createdAt) orderByClause.createdAt = orderBy.createdAt;
+    if (orderBy.updatedAt) orderByClause.updatedAt = orderBy.updatedAt;
+    if (orderBy.stars) orderByClause.stars = orderBy.stars;
+    if (orderBy.downloads) orderByClause.downloads = orderBy.downloads;
+
+    // If nothing was set, use default
+    if (Object.keys(orderByClause).length === 0) {
+      return { createdAt: "desc" };
+    }
+
+    return orderByClause;
   }
 
   async countBoilerplates(where?: {

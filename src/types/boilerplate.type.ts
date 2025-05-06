@@ -1,5 +1,38 @@
-import { ObjectType, Field, ID, Int, InputType } from '@nestjs/graphql';
-import { GraphQLUpload, FileUpload } from "graphql-upload-minimal";
+import {
+  ObjectType,
+  Field,
+  ID,
+  Int,
+  Float,
+  InputType,
+  registerEnumType,
+} from "@nestjs/graphql";
+
+// Enums for advanced filtering
+export enum TextMatchMode {
+  EXACT = "EXACT",
+  CONTAINS = "CONTAINS",
+  FUZZY = "FUZZY",
+  STARTS_WITH = "STARTS_WITH",
+  ENDS_WITH = "ENDS_WITH",
+  REGEX = "REGEX",
+}
+
+export enum OrderDirection {
+  ASC = "asc",
+  DESC = "desc",
+}
+
+// Register enums with GraphQL
+registerEnumType(TextMatchMode, {
+  name: "TextMatchMode",
+  description: "Text matching modes for string comparisons",
+});
+
+registerEnumType(OrderDirection, {
+  name: "OrderDirection",
+  description: "Sorting direction",
+});
 
 // FileInput type
 @InputType("FileInputType")
@@ -81,12 +114,6 @@ export class BoilerplateInput {
 
   @Field(() => [String], { nullable: true })
   tags?: string[];
-
-  @Field(() => GraphQLUpload, { nullable: true })
-  zipFile?: Promise<FileUpload>;
-
-  @Field(() => [String], { nullable: false })
-  zipFilePath?: string;
 }
 
 // Boilerplate Query Filters and Ordering

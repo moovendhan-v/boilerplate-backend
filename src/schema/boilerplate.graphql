@@ -50,8 +50,37 @@ type Category {
   description: String!
 }
 
+enum TextMatchMode {
+  EXACT
+  STARTS_WITH
+  ENDS_WITH
+  CONTAINS
+}
+
+type BoilerplateEdge {
+  node: Boilerplate!
+  relevanceScore: Float
+  cursor: String!
+}
+
+type BoilerplateConnection {
+  edges: [BoilerplateEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+
 type Query {
   boilerplate(id: ID!): Boilerplate
+  searchBoilerplates(
+    query: String
+    matchMode: TextMatchMode
+    minRelevanceScore: Float
+    first: Int
+    after: String
+    where: BoilerplateWhereInput
+    orderBy: BoilerplateOrderByInput
+  ): BoilerplateConnection!
   
   # Get users who liked a boilerplate
   likedBy(boilerplateId: ID!): [String!]!
