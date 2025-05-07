@@ -91,6 +91,7 @@ export class BoilerplateService {
     license?: string;
     complexity?: string;
     views?: number;
+    tags?: string[];
     files?: Array<{
       name: string;
       path: string;
@@ -159,6 +160,50 @@ export class BoilerplateService {
               })
             )
           );
+        }
+
+        // 4. Create tags if any are provided
+        if (data.tags && data.tags.length > 0) {
+          // Step 1: Upsert Tags (create if not exist)
+          const tagRecords = await Promise.all(
+            data.tags.map((tagName) =>
+              tx.tag.upsert({
+                where: { name: tagName },
+                update: {},
+                create: {
+                  name: tagName,
+                  slug: tagName.toLowerCase().replace(/\s+/g, "-"),
+                },
+              })
+            )
+          );
+
+          // Step 2: Create mappings in BoilerplateTags
+          const tagMappings = tagRecords.map((tag) => ({
+            boilerplateId: boilerplate.id,
+            tagId: tag.id,
+          }));
+
+          // Step 3: Filter duplicates (in case they already exist)
+          const existingMappings = await tx.boilerplateTags.findMany({
+            where: {
+              boilerplateId: boilerplate.id,
+              tagId: { in: tagMappings.map((m) => m.tagId) },
+            },
+            select: { tagId: true },
+          });
+
+          const existingTagIds = new Set(existingMappings.map((m) => m.tagId));
+          const newMappings = tagMappings.filter(
+            (m) => !existingTagIds.has(m.tagId)
+          );
+
+          if (newMappings.length > 0) {
+            await tx.boilerplateTags.createMany({
+              data: newMappings,
+              skipDuplicates: true, // Just in case
+            });
+          }
         }
 
         // Return the created boilerplate with related data
@@ -311,12 +356,12 @@ export class BoilerplateService {
   }) {
     try {
       const whereClause = this.buildWhereClause(where);
-  
+
       // Apply cursor-based pagination
       if (afterId) {
         whereClause.id = { gt: afterId };
       }
-  
+
       // Construct search conditions based on matchMode
       const searchConditions: any[] = [];
       if (query) {
@@ -324,37 +369,39 @@ export class BoilerplateService {
           case TextMatchMode.EXACT:
             searchConditions.push(
               { title: { equals: query } },
-              { description: { equals: query } },
+              { description: { equals: query } }
             );
             break;
           case TextMatchMode.CONTAINS:
             searchConditions.push(
-              { title: { contains: query, mode: 'insensitive' } },
-              { description: { contains: query, mode: 'insensitive' } }
+              { title: { contains: query, mode: "insensitive" } },
+              { description: { contains: query, mode: "insensitive" } }
             );
             break;
           case TextMatchMode.STARTS_WITH:
             searchConditions.push(
-              { title: { startsWith: query, mode: 'insensitive' } },
-              { description: { startsWith: query, mode: 'insensitive' } }
+              { title: { startsWith: query, mode: "insensitive" } },
+              { description: { startsWith: query, mode: "insensitive" } }
             );
             break;
           case TextMatchMode.ENDS_WITH:
             searchConditions.push(
-              { title: { endsWith: query, mode: 'insensitive' } },
-              { description: { endsWith: query, mode: 'insensitive' } }
+              { title: { endsWith: query, mode: "insensitive" } },
+              { description: { endsWith: query, mode: "insensitive" } }
             );
             break;
           case TextMatchMode.REGEX:
             try {
-              const regex = new RegExp(query, 'i');
+              const regex = new RegExp(query, "i");
               searchConditions.push(
                 { title: { matches: regex } },
                 { description: { matches: regex } }
               );
             } catch (e) {
-              logger.warn('[BoilerplateService] Invalid regex pattern', { query });
-              throw new ValidationError('Invalid regex pattern');
+              logger.warn("[BoilerplateService] Invalid regex pattern", {
+                query,
+              });
+              throw new ValidationError("Invalid regex pattern");
             }
             break;
           case TextMatchMode.FUZZY:
@@ -367,14 +414,14 @@ export class BoilerplateService {
           default:
             break;
         }
-  
+
         if (searchConditions.length > 0) {
           whereClause.OR = searchConditions;
         }
       }
-  
+
       const orderByClause = this.buildOrderByClause(orderBy);
-  
+
       const results = await prisma.boilerplate.findMany({
         take: first,
         where: whereClause,
@@ -384,23 +431,29 @@ export class BoilerplateService {
           author: true,
         },
       });
-  
+
       // Compute relevance scores if a query is provided
       const items = results.map((item) => {
         let score = 1.0;
         if (query) {
-          const titleMatch = item.title?.toLowerCase().includes(query.toLowerCase());
-          const descriptionMatch = item.description?.toLowerCase().includes(query.toLowerCase());
+          const titleMatch = item.title
+            ?.toLowerCase()
+            .includes(query.toLowerCase());
+          const descriptionMatch = item.description
+            ?.toLowerCase()
+            .includes(query.toLowerCase());
           score = 0;
           if (titleMatch) score += 0.6;
           if (descriptionMatch) score += 0.4;
         }
         return { item, score: Math.min(score, 1.0) };
       });
-  
+
       // Filter by minRelevanceScore
-      const filteredItems = items.filter(({ score }) => score >= minRelevanceScore);
-  
+      const filteredItems = items.filter(
+        ({ score }) => score >= minRelevanceScore
+      );
+
       return {
         items: filteredItems,
         totalCount: filteredItems.length,
@@ -409,8 +462,8 @@ export class BoilerplateService {
       if (error instanceof CustomError) {
         throw error;
       }
-  
-      logger.error('[BoilerplateService] Error searching boilerplates', {
+
+      logger.error("[BoilerplateService] Error searching boilerplates", {
         query,
         matchMode,
         minRelevanceScore,
@@ -419,8 +472,10 @@ export class BoilerplateService {
         orderBy,
         error: error.message,
       });
-  
-      throw new DatabaseError(`Failed to search boilerplates: ${error.message}`);
+
+      throw new DatabaseError(
+        `Failed to search boilerplates: ${error.message}`
+      );
     }
   }
 
@@ -658,4 +713,39 @@ export class BoilerplateService {
       throw new CustomError("Failed to fetch categories");
     }
   }
+
+  async findAllTags({
+    name,
+    skip = 0,
+    take = 10,
+    cursor,
+  }: {
+    name?: string;
+    skip?: number;
+    take?: number;
+    cursor?: { id: string };
+  }) {
+    try {
+      return await prisma.tag.findMany({
+        ...(name && {
+          where: {
+            name: {
+              contains: name,
+              mode: "insensitive",
+            },
+          },
+        }),
+        ...(cursor && { cursor }),
+        skip,
+        take,
+        orderBy: { name: "asc" },
+      });
+    } catch (error: any) {
+      logger.error("[BoilerplateService] Failed to fetch tags", {
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+      throw new CustomError("Failed to fetch tags");
+    }
+  }
+  
 }

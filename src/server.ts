@@ -42,8 +42,7 @@ const resolvers = {
   },
   User: userResolvers.User,
   Boilerplate: boilerplateResolvers.Boilerplate,
-  // Add this line to support file uploads
-  Upload: GraphQLUpload,
+  // Upload: GraphQLUpload,
 };
 
 function logResolverKeys(resolvers: Record<string, any>) {

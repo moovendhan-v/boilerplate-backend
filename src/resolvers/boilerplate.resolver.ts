@@ -13,6 +13,8 @@ import {
   BoilerplateInput,
   BoilerplateOrderByInput,
   BoilerplateWhereInput,
+  Tag,
+  TagConnection,
   TextMatchMode,
 } from "../types/boilerplate.type";
 import { BoilerplateService } from "../services/boilerplate.service";
@@ -390,6 +392,36 @@ export class BoilerplateResolver {
       throw handleError(error);
     }
   }
+
+  @Query(() => [TagConnection])
+  async tags(
+    @Args('name', { nullable: true }) name?: string,
+    @Args('skip', { type: () => Int, nullable: true }) skip?: number,
+    @Args('take', { type: () => Int, nullable: true }) take?: number,
+    @Args('cursor', { nullable: true }) cursor?: string,
+  ): Promise<Tag[]> {
+    logger.info("[Boilerplate Resolver] Fetching tags");
+  
+    try {
+      const tags = await this.boilerplateService.findAllTags({
+        name,
+        skip,
+        take,
+        cursor: cursor ? { id: cursor } : undefined,
+      });
+  
+      logger.info("[Boilerplate Resolver] Fetched tags", {
+        count: tags.length,
+      });
+  
+      return tags;
+    } catch (error: any) {
+      logger.error("[Boilerplate Resolver] Failed to fetch tags", {
+        error: error.message,
+      });
+      throw handleError(error);
+    }
+  }
 }
 
 export const boilerplateResolvers = {
@@ -409,13 +441,13 @@ export const boilerplateResolvers = {
       const {
         first = 10,
         after = undefined,
-        query = '',
+        query = "",
         matchMode = TextMatchMode.CONTAINS,
         minRelevanceScore = 0.5,
         where,
         orderBy,
       } = args;
-    
+
       return BoilerplateResolver.instance.searchBoilerplates(
         first,
         after,
@@ -425,7 +457,7 @@ export const boilerplateResolvers = {
         where,
         orderBy
       );
-    },    
+    },
     boilerplate: (_: unknown, args: { id: string }) =>
       BoilerplateResolver.instance.boilerplate(args.id),
     boilerplates: (
@@ -446,6 +478,8 @@ export const boilerplateResolvers = {
     likedBy: (_: unknown, args: { boilerplateId: string }) =>
       BoilerplateResolver.instance.likedBy(args.boilerplateId),
     categories: () => BoilerplateResolver.instance.categories(),
+    tags: (_: unknown, args: { name?: string; skip?: number; take?: number }) => 
+      BoilerplateResolver.instance.tags(args.name, args.skip, args.take),    
   },
   Mutation: {
     createBoilerplate: async (

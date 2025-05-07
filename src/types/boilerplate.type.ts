@@ -3,9 +3,9 @@ import {
   Field,
   ID,
   Int,
-  Float,
   InputType,
   registerEnumType,
+  GraphQLISODateTime,
 } from "@nestjs/graphql";
 
 // Enums for advanced filtering
@@ -39,10 +39,13 @@ registerEnumType(OrderDirection, {
 export class FileInput {
   @Field()
   name!: string;
+
   @Field()
   path!: string;
+
   @Field()
   content!: string;
+
   @Field()
   type!: string;
 }
@@ -52,36 +55,50 @@ export class FileInput {
 export class Boilerplate {
   @Field(() => ID)
   id!: string;
+
   @Field()
   title!: string;
+
   @Field()
   description!: string;
-  @Field()
+
+  @Field({ nullable: true })
   repositoryUrl?: string;
-  @Field()
+
+  @Field({ nullable: true })
   framework?: string;
+
   @Field()
   language!: string;
-  
-  // Change this line to make it properly nullable in GraphQL schema
-  @Field(() => [String], { nullable: true }) 
+
+  @Field(() => [String], { nullable: true })
   tags?: string[];
-  
-  @Field(() => Int)
+
+  @Field(() => Int, { nullable: true })
   stars?: number;
-  @Field(() => Int)
+
+  @Field(() => Int, { nullable: true })
   downloads?: number;
-  @Field(() => String)
+
+  @Field()
   authorId!: string;
-  @Field(() => [FileInput])
+
+  @Field(() => [FileInput], { nullable: true })
   files?: FileInput[];
-  @Field(() => String)
-  createdAt?: string;
-  @Field(() => String)
-  updatedAt?: string;
+
+  @Field(() => GraphQLISODateTime, { nullable: true })
+  createdAt?: Date;
+
+  @Field(() => GraphQLISODateTime, { nullable: true })
+  updatedAt?: Date;
+
   @Field(() => [String], { nullable: true })
   likedBy?: string[];
-  @Field(() => [String], { description: 'List of user IDs who liked this boilerplate' })
+
+  @Field(() => [String], {
+    nullable: true,
+    description: 'List of user IDs who liked this boilerplate',
+  })
   likedByUsers?: string[];
 }
 
@@ -94,19 +111,22 @@ export class BoilerplateInput {
   @Field()
   description!: string;
 
-  @Field()
+  @Field({ nullable: true })
   repositoryUrl?: string;
 
   @Field()
   framework!: string;
 
   @Field()
+  categoryId!: string;
+
+  @Field()
   language!: string;
 
-  @Field()
+  @Field({ nullable: true })
   repoPath?: string;
 
-  @Field()
+  @Field({ nullable: true })
   category?: string;
 
   @Field()
@@ -141,20 +161,20 @@ export class BoilerplateWhereInput {
 // Boilerplate OrderBy Input Type
 @InputType("BoilerplateOrderByInputType")
 export class BoilerplateOrderByInput {
-  @Field(() => String, { nullable: true })
-  title?: "asc" | "desc";
+  @Field(() => OrderDirection, { nullable: true })
+  title?: OrderDirection;
 
-  @Field(() => String, { nullable: true })
-  stars?: "asc" | "desc";
+  @Field(() => OrderDirection, { nullable: true })
+  stars?: OrderDirection;
 
-  @Field(() => String, { nullable: true })
-  downloads?: "asc" | "desc";
+  @Field(() => OrderDirection, { nullable: true })
+  downloads?: OrderDirection;
 
-  @Field(() => String, { nullable: true })
-  createdAt?: "asc" | "desc";
+  @Field(() => OrderDirection, { nullable: true })
+  createdAt?: OrderDirection;
 
-  @Field(() => String, { nullable: true })
-  updatedAt?: "asc" | "desc";
+  @Field(() => OrderDirection, { nullable: true })
+  updatedAt?: OrderDirection;
 }
 
 // PageInfo Object Type for Pagination
@@ -190,11 +210,33 @@ export class BoilerplateConnection {
   totalCount!: number;
 }
 
-// // Updated Boilerplate with Author and Related Fields (for Prisma query result)
-// type BoilerplateWithAuthor = Prisma.BoilerplateGetPayload<{
-//   include: {
-//     author: true;
-//     likes: true;
-//     files: true;
-//   };
-// }>;
+// Tag types
+@ObjectType()
+export class Tag {
+  @Field(() => String)
+  id!: string;
+
+  @Field(() => String)
+  name!: string;
+}
+
+@ObjectType()
+export class TagEdge {
+  @Field(() => String)
+  cursor!: string;
+
+  @Field(() => Tag)
+  node!: Tag;
+}
+
+@ObjectType()
+export class TagConnection {
+  @Field(() => [TagEdge])
+  edges!: TagEdge[];
+
+  @Field(() => Int)
+  totalCount!: number;
+
+  @Field(() => Boolean)
+  hasNextPage!: boolean;
+}

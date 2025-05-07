@@ -87,6 +87,7 @@ type Query {
   
   # Get all categories
   categories: [Category!]!
+  tags(name: String): [Tag!]!
   
   # Keep the original cursor-based pagination
   boilerplates(
@@ -166,6 +167,7 @@ input CreateBoilerplateInput {
   files: [FileInput!]
   zipFile: Upload 
   category: String!
+  categoryId: String
 }
 
 input UpdateBoilerplateInput {
@@ -203,4 +205,11 @@ input SignupInput {
   name: String!
   email: String!
   password: String!
+}
+
+type Tag {
+  id: ID!
+  name: String!
+  slug: String!
+  createdAt: String!
 }
