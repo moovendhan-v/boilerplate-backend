@@ -24,6 +24,7 @@ import { GraphQLUpload, graphqlUploadExpress } from "graphql-upload-minimal";
 
 import { boilerplateResolvers } from "./resolvers/boilerplate.resolver";
 import { userResolvers } from "./resolvers/user.resolver";
+import { bloggerResolvers } from "./resolvers/blogs.resolver";
 import {
   errorStatusMap,
   isErrorCode,
@@ -35,6 +36,7 @@ const resolvers = {
   Query: {
     ...(userResolvers.Query || {}),
     ...(boilerplateResolvers.Query || {}),
+    ...(bloggerResolvers.Query || {})
   },
   Mutation: {
     ...(userResolvers.Mutation || {}),

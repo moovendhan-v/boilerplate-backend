@@ -1,0 +1,57 @@
+type AuthorImage {
+  url: String
+}
+
+type Author {
+  id: String
+  displayName: String
+  url: String
+  image: AuthorImage
+}
+
+type Blog {
+  id: ID!
+}
+
+type BlogImage {
+  url: String!
+}
+
+type Post {
+  labels: [String]
+  id: ID!
+  kind: String
+  blog: Blog
+  title: String!
+  published: String!
+  updated: String
+  url: String
+  selfLink: String
+  content: String
+  author: Author
+  images: [BlogImage]
+  # Additional useful fields
+  thumbnail: String
+  shortDescription: String
+}
+
+type BloggerPostsResponse {
+  posts: [Post!]!
+  nextPageToken: String
+}
+
+type Query {
+  # Enhanced query with filter options
+  bloggerPosts(
+    pageToken: String
+    maxResults: Int
+    fetchImages: Boolean
+    orderBy: String
+    startDate: String
+    endDate: String
+    labels: [String]
+    status: String
+  ): BloggerPostsResponse!
+  
+  bloggerPost(postId: String!): Post!
+}

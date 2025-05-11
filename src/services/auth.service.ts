@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 const REFRESH_SECRET = process.env.REFRESH_SECRET || "your-refresh-secret";
 
 // Token expiration times in seconds
-const ACCESS_TOKEN_EXPIRY = "24h";
+const ACCESS_TOKEN_EXPIRY = "24h"; // #TODO: Update this time for productions
 const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60; // 7 days
 
 // Type for user without password
@@ -31,42 +31,6 @@ const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 const GITHUB_CALLBACK_URL = process.env.GITHUB_CALLBACK_URL;
 
 export class AuthService {
-  /**
-   * Validates user credentials
-   * @param email User email
-   * @param password User password
-   * @returns User object without password or null if validation fails
-   */
-  // async validateUser(
-  //   email: string,
-  //   password: string
-  // ): Promise<SafeUser | null> {
-  //   try {
-  //     const user = await prisma.user.findUnique({
-  //       where: { email },
-  //     });
-
-  //     if (!user) {
-  //       logger.warn(`User validation failed: Email ${email} not found`);
-  //       return null;
-  //     }
-
-  //     const isPasswordValid = await bcrypt.compare(password, user.password);
-  //     if (!isPasswordValid) {
-  //       logger.warn(`User validation failed: Invalid password for ${email}`);
-  //       return null;
-  //     }
-
-  //     const { password: _, ...safeUser } = user;
-  //     return safeUser;
-  //   } catch (error) {
-  //     logger.error("Error validating user:", error);
-  //     throw new GraphQLError("Authentication error", {
-  //       extensions: { code: "INTERNAL_SERVER_ERROR" },
-  //     });
-  //   }
-  // }
-
   /**
    * Generates JWT access and refresh tokens
    * @param user User object
@@ -145,121 +109,6 @@ export class AuthService {
   }
 
   /**
-   * Handles user login
-   * @param user User object
-   * @param res Express response object
-   * @returns Authentication response
-   */
-  async login(user: SafeUser, res: Response): Promise<AuthResponse> {
-    try {
-      const { accessToken, refreshToken, tokenId } = this.generateTokens(user);
-
-      // Store refresh token in Redis with metadata
-      await this.storeRefreshToken(user.id, refreshToken, tokenId);
-
-      // Set refresh token in HTTP-only cookie
-      this.setRefreshTokenCookie(res, refreshToken);
-
-      logger.info(`User ${user.id} logged in successfully`);
-
-      return {
-        token: accessToken,
-        refreshToken, // Include refresh token in response
-        user,
-      };
-    } catch (error) {
-      logger.error("Login error:", error);
-      throw new GraphQLError("Authentication failed", {
-        extensions: { code: "INTERNAL_SERVER_ERROR" },
-      });
-    }
-  }
-
-  /**
-   * Handles user signup
-   * @param data User signup data
-   * @param res Express response object
-   * @returns Authentication response
-   */
-  async signup(
-    data: { email: string; password: string; name?: string },
-    res: Response
-  ): Promise<AuthResponse> {
-    try {
-      // Validate password strength
-      this.validatePassword(data.password);
-
-      const hashedPassword = await bcrypt.hash(data.password, 12); // Increased from 10 to 12 for better security
-
-      const user = await prisma.user.create({
-        data: {
-          email: data.email,
-          password: hashedPassword,
-          name: data.name || null,
-          role: "USER",
-        },
-      });
-
-      const { password: _, ...safeUser } = user;
-      const { accessToken, refreshToken, tokenId } =
-        this.generateTokens(safeUser);
-
-      // Store refresh token in Redis
-      await this.storeRefreshToken(user.id, refreshToken, tokenId);
-
-      // Set refresh token in HTTP-only cookie
-      this.setRefreshTokenCookie(res, refreshToken);
-
-      logger.info(`User ${user.id} signed up successfully`);
-
-      return {
-        token: accessToken,
-        refreshToken, // Include refresh token in response
-        user: safeUser,
-      };
-    } catch (error) {
-      // Handle Prisma unique constraint violations
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2002"
-      ) {
-        const target = error.meta?.target as string[] | undefined;
-        if (target?.includes("email")) {
-          logger.warn(`Signup failed: Email ${data.email} already exists`);
-          throw new GraphQLError("Email already exists", {
-            extensions: { code: "BAD_USER_INPUT" },
-          });
-        }
-      }
-
-      // Handle validation errors
-      if (error instanceof GraphQLError) {
-        throw error;
-      }
-
-      // Log and rethrow other errors
-      logger.error("Signup error:", error);
-      throw new GraphQLError("Failed to create user account", {
-        extensions: { code: "INTERNAL_SERVER_ERROR" },
-      });
-    }
-  }
-
-  /**
-   * Validates password strength
-   * @param password Password to validate
-   */
-  private validatePassword(password: string): void {
-    if (password.length < 8) {
-      throw new GraphQLError("Password must be at least 8 characters long", {
-        extensions: { code: "BAD_USER_INPUT" },
-      });
-    }
-
-    // Additional password strength requirements can be added here
-  }
-
-  /**
    * Sets refresh token cookie
    * @param res Express response object
    * @param refreshToken Refresh token
@@ -327,8 +176,7 @@ export class AuthService {
         });
       }
 
-      // Generate new tokens (token rotation for security)
-      const { password, ...safeUser } = user;
+      const { ...safeUser } = user;
       const {
         accessToken,
         refreshToken: newRefreshToken,
@@ -350,7 +198,7 @@ export class AuthService {
       return {
         access_token: accessToken,
         refreshToken: newRefreshToken,
-        user: safeUser, // Include user details
+        user: safeUser,
       };
     } catch (error) {
       // Error handling code remains unchanged
@@ -430,7 +278,7 @@ export class AuthService {
     try {
       // Exchange code for access token
       const tokenResponse = await axios.post(
-        'https://github.com/login/oauth/access_token',
+        "https://github.com/login/oauth/access_token",
         {
           client_id: GITHUB_CLIENT_ID,
           client_secret: GITHUB_CLIENT_SECRET,
@@ -439,48 +287,50 @@ export class AuthService {
         },
         {
           headers: {
-            Accept: 'application/json',
+            Accept: "application/json",
           },
         }
       );
-  
+
       const accessToken = tokenResponse.data.access_token;
-  
+
       // Get user data from GitHub
-      const githubUser = await axios.get('https://api.github.com/user', {
+      const githubUser = await axios.get("https://api.github.com/user", {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-  
+
       // Get user email from GitHub
-      const emails = await axios.get('https://api.github.com/user/emails', {
+      const emails = await axios.get("https://api.github.com/user/emails", {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
-  
-      const primaryEmail = emails.data.find((email: any) => email.primary)?.email;
-  
+
+      const primaryEmail = emails.data.find(
+        (email: any) => email.primary
+      )?.email;
+
       // Type-safe approach for finding user
       let user = await prisma.user.findFirst({
         where: {
           OR: [
             { email: primaryEmail },
-            { githubId: githubUser.data.id.toString() }
-          ]
-        }
+            { githubId: githubUser.data.id.toString() },
+          ],
+        },
       });
-  
+
       if (!user) {
         // Create new user with type-safe data
         user = await prisma.user.create({
           data: {
             email: primaryEmail,
-            name: githubUser.data.name || 'GitHub User',
+            name: githubUser.data.name || "GitHub User",
             avatar: githubUser.data.avatar_url,
-            role: 'USER',
-            authProvider: 'GITHUB',
+            role: "USER",
+            authProvider: "GITHUB",
             githubId: githubUser.data.id.toString(),
             githubToken: accessToken,
           },
@@ -494,41 +344,39 @@ export class AuthService {
             githubToken: accessToken,
             avatar: githubUser.data.avatar_url,
             name: user.name || githubUser.data.name,
-            authProvider: 'GITHUB',
+            authProvider: "GITHUB",
           },
         });
       }
-  
+
       // Remove password from user object
-      const { password: _, ...safeUser } = user;
-      
+      const { ...safeUser } = user;
+
       // Generate tokens
-      const { accessToken: jwtToken, refreshToken, tokenId } = this.generateTokens(safeUser);
-  
+      const {
+        accessToken: jwtToken,
+        refreshToken,
+        tokenId,
+      } = this.generateTokens(safeUser);
+
       // Store refresh token
       await this.storeRefreshToken(user.id, refreshToken, tokenId);
-  
+
       // Set refresh token cookie
       this.setRefreshTokenCookie(res, refreshToken);
-  
+
       logger.info(`User ${user.id} authenticated via GitHub`);
-  
+
       return {
-        token: jwtToken, refreshToken, user: safeUser,
+        token: jwtToken,
+        refreshToken,
+        user: safeUser,
       };
     } catch (error) {
-      logger.error('GitHub authentication error:', error);
-      throw new GraphQLError('GitHub authentication failed', {
-        extensions: { code: 'INTERNAL_SERVER_ERROR' },
+      logger.error("GitHub authentication error:", error);
+      throw new GraphQLError("GitHub authentication failed", {
+        extensions: { code: "INTERNAL_SERVER_ERROR" },
       });
     }
-  }
-
-  /**
-   * Create safe user object without sensitive data
-   */
-  private getSafeUser(user: User): SafeUser {
-    const { password: _, ...safeUser } = user;
-    return safeUser;
   }
 }

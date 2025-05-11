@@ -1,0 +1,399 @@
+
+> boilerplate-hub-backend@1.0.0 dev
+> ts-node-dev --project tsconfig.json --respawn --transpile-only --env-file=.env src/server.ts
+
+[INFO] 04:23:00 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.8.3)
+=== RESOLVER STRUCTURE ===
+Resolver type: Query
+  Fields: me, user, users, userBoilerplates, likedBoilerplates, searchBoilerplates, boilerplate, boilerplates, likedBy, categories, tags, bloggerPosts, bloggerPost
+Resolver type: Mutation
+  Fields: signup, updateProfile, refreshToken, logout, githubAuth, createBoilerplate, updateBoilerplate, deleteBoilerplate, likeBoilerplate, unlikeBoilerplate
+Resolver type: User
+  Fields: boilerplates, likedBoilerplates
+Resolver type: Boilerplate
+  Fields: 
+2025-05-11 04:23:01 [[32minfo[39m]: 🚀 Server ready at http://localhost:4000/graphql 
+2025-05-11 04:23:01 [[32minfo[39m]: Successfully connected to Redis 
+2025-05-11 04:23:05 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:23:05 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:23:05 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:23:05 [[32minfo[39m]: 📥 Request started: anonymous 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Query: mutation RefreshToken { refreshToken { access_token refreshToken user { id email name role } } } 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Query Hash: f3199f1083b1236a36bd49e702a8755182b1636e3c57674a713ba8fd09a76b8f 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:23:05 [[32minfo[39m]: ✅ Operation resolved: mutation anonymous 
+2025-05-11 04:23:05 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:23:05 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:23:05 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:23:05 [[32minfo[39m]: 📥 Request started: anonymous 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Query: query GetTags { tags { id name } } 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Query Hash: b0901027bf0245688bc73ea04a5ad78dd5159b9750a146502a4dfe9395ede1ac 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:23:05 [[32minfo[39m]: ✅ Operation resolved: query anonymous 
+2025-05-11 04:23:05 [[32minfo[39m]: [Boilerplate Resolver] Fetching tags 
+2025-05-11 04:23:05 [[32minfo[39m]: [Boilerplate Resolver] Fetched tags {
+  "count": 8
+}
+2025-05-11 04:23:05 [[32minfo[39m]: Access token refreshed for user add17260-8108-4884-b7fe-5f9286ad14b4 
+2025-05-11 04:23:05 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:23:05 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:23:05 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:23:05 [[32minfo[39m]: 📥 Request started: anonymous 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Query: query BloggerPosts($maxResults: Int) { bloggerPosts(maxResults: $maxResults) { posts { title url # content shortDescription thumbnail images { url } author { image { url } displayName } blog { id } id kind published selfLink updated } } } 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Query Hash: 63c3a320afc103c351ca6e17975b689d501fafa2a42fdac5fd8569042ae14294 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Variables: {} 
+2025-05-11 04:23:05 [[32minfo[39m]: ✅ Operation resolved: query anonymous 
+2025-05-11 04:23:05 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:23:05 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:23:05 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:23:05 [[32minfo[39m]: 📥 Request started: anonymous 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Query: query GetTags { tags { id name } } 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Query Hash: b0901027bf0245688bc73ea04a5ad78dd5159b9750a146502a4dfe9395ede1ac 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:23:05 [[32minfo[39m]: ✅ Operation resolved: query anonymous 
+2025-05-11 04:23:05 [[32minfo[39m]: [Boilerplate Resolver] Fetching tags 
+2025-05-11 04:23:05 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:23:05 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:23:05 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:23:05 [[32minfo[39m]: 📥 Request started: anonymous 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Query: query GetAllCategories { categories { id name slug icon color description } } 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Query Hash: 778d9bccac27d4751423a04ce7444597907ef2ad56b9830d09d9467560375454 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:23:05 [[32minfo[39m]: ✅ Operation resolved: query anonymous 
+2025-05-11 04:23:05 [[32minfo[39m]: [Boilerplate Resolver] Fetching all categories 
+2025-05-11 04:23:05 [[32minfo[39m]: [Boilerplate Resolver] Fetched tags {
+  "count": 8
+}
+2025-05-11 04:23:05 [[32minfo[39m]: [Boilerplate Resolver] Fetched categories {
+  "count": 44
+}
+2025-05-11 04:23:05 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:23:05 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:23:05 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:23:05 [[32minfo[39m]: 📥 Request started: anonymous 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Query: query GetAllCategories { categories { id name slug icon color description } } 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Query Hash: 778d9bccac27d4751423a04ce7444597907ef2ad56b9830d09d9467560375454 
+2025-05-11 04:23:05 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:23:05 [[32minfo[39m]: ✅ Operation resolved: query anonymous 
+2025-05-11 04:23:05 [[32minfo[39m]: [Boilerplate Resolver] Fetching all categories 
+2025-05-11 04:23:05 [[32minfo[39m]: [Boilerplate Resolver] Fetched categories {
+  "count": 44
+}
+[INFO] 04:23:24 Restarting: /usr/src/app/src/services/blogs.service.ts has been modified
+=== RESOLVER STRUCTURE ===
+Resolver type: Query
+  Fields: me, user, users, userBoilerplates, likedBoilerplates, searchBoilerplates, boilerplate, boilerplates, likedBy, categories, tags, bloggerPosts, bloggerPost
+Resolver type: Mutation
+  Fields: signup, updateProfile, refreshToken, logout, githubAuth, createBoilerplate, updateBoilerplate, deleteBoilerplate, likeBoilerplate, unlikeBoilerplate
+Resolver type: User
+  Fields: boilerplates, likedBoilerplates
+Resolver type: Boilerplate
+  Fields: 
+2025-05-11 04:23:24 [[32minfo[39m]: 🚀 Server ready at http://localhost:4000/graphql 
+2025-05-11 04:23:24 [[32minfo[39m]: Successfully connected to Redis 
+[INFO] 04:23:26 Restarting: /usr/src/app/src/services/blogs.service.ts has been modified
+=== RESOLVER STRUCTURE ===
+Resolver type: Query
+  Fields: me, user, users, userBoilerplates, likedBoilerplates, searchBoilerplates, boilerplate, boilerplates, likedBy, categories, tags, bloggerPosts, bloggerPost
+Resolver type: Mutation
+  Fields: signup, updateProfile, refreshToken, logout, githubAuth, createBoilerplate, updateBoilerplate, deleteBoilerplate, likeBoilerplate, unlikeBoilerplate
+Resolver type: User
+  Fields: boilerplates, likedBoilerplates
+Resolver type: Boilerplate
+  Fields: 
+2025-05-11 04:23:27 [[32minfo[39m]: 🚀 Server ready at http://localhost:4000/graphql 
+2025-05-11 04:23:27 [[32minfo[39m]: Successfully connected to Redis 
+[INFO] 04:23:47 Restarting: /usr/src/app/src/services/blogs.service.ts has been modified
+=== RESOLVER STRUCTURE ===
+Resolver type: Query
+  Fields: me, user, users, userBoilerplates, likedBoilerplates, searchBoilerplates, boilerplate, boilerplates, likedBy, categories, tags, bloggerPosts, bloggerPost
+Resolver type: Mutation
+  Fields: signup, updateProfile, refreshToken, logout, githubAuth, createBoilerplate, updateBoilerplate, deleteBoilerplate, likeBoilerplate, unlikeBoilerplate
+Resolver type: User
+  Fields: boilerplates, likedBoilerplates
+Resolver type: Boilerplate
+  Fields: 
+2025-05-11 04:23:47 [[32minfo[39m]: 🚀 Server ready at http://localhost:4000/graphql 
+2025-05-11 04:23:47 [[32minfo[39m]: Successfully connected to Redis 
+[INFO] 04:23:51 Restarting: /usr/src/app/src/services/blogs.service.ts has been modified
+=== RESOLVER STRUCTURE ===
+Resolver type: Query
+  Fields: me, user, users, userBoilerplates, likedBoilerplates, searchBoilerplates, boilerplate, boilerplates, likedBy, categories, tags, bloggerPosts, bloggerPost
+Resolver type: Mutation
+  Fields: signup, updateProfile, refreshToken, logout, githubAuth, createBoilerplate, updateBoilerplate, deleteBoilerplate, likeBoilerplate, unlikeBoilerplate
+Resolver type: User
+  Fields: boilerplates, likedBoilerplates
+Resolver type: Boilerplate
+  Fields: 
+2025-05-11 04:23:51 [[32minfo[39m]: 🚀 Server ready at http://localhost:4000/graphql 
+2025-05-11 04:23:51 [[32minfo[39m]: Successfully connected to Redis 
+[INFO] 04:23:55 Restarting: /usr/src/app/src/services/blogs.service.ts has been modified
+=== RESOLVER STRUCTURE ===
+Resolver type: Query
+  Fields: me, user, users, userBoilerplates, likedBoilerplates, searchBoilerplates, boilerplate, boilerplates, likedBy, categories, tags, bloggerPosts, bloggerPost
+Resolver type: Mutation
+  Fields: signup, updateProfile, refreshToken, logout, githubAuth, createBoilerplate, updateBoilerplate, deleteBoilerplate, likeBoilerplate, unlikeBoilerplate
+Resolver type: User
+  Fields: boilerplates, likedBoilerplates
+Resolver type: Boilerplate
+  Fields: 
+2025-05-11 04:23:55 [[32minfo[39m]: 🚀 Server ready at http://localhost:4000/graphql 
+2025-05-11 04:23:55 [[32minfo[39m]: Successfully connected to Redis 
+[INFO] 04:23:57 Restarting: /usr/src/app/src/services/blogs.service.ts has been modified
+=== RESOLVER STRUCTURE ===
+Resolver type: Query
+  Fields: me, user, users, userBoilerplates, likedBoilerplates, searchBoilerplates, boilerplate, boilerplates, likedBy, categories, tags, bloggerPosts, bloggerPost
+Resolver type: Mutation
+  Fields: signup, updateProfile, refreshToken, logout, githubAuth, createBoilerplate, updateBoilerplate, deleteBoilerplate, likeBoilerplate, unlikeBoilerplate
+Resolver type: User
+  Fields: boilerplates, likedBoilerplates
+Resolver type: Boilerplate
+  Fields: 
+2025-05-11 04:23:57 [[32minfo[39m]: 🚀 Server ready at http://localhost:4000/graphql 
+2025-05-11 04:23:57 [[32minfo[39m]: Successfully connected to Redis 
+[INFO] 04:23:59 Restarting: /usr/src/app/src/services/blogs.service.ts has been modified
+=== RESOLVER STRUCTURE ===
+Resolver type: Query
+  Fields: me, user, users, userBoilerplates, likedBoilerplates, searchBoilerplates, boilerplate, boilerplates, likedBy, categories, tags, bloggerPosts, bloggerPost
+Resolver type: Mutation
+  Fields: signup, updateProfile, refreshToken, logout, githubAuth, createBoilerplate, updateBoilerplate, deleteBoilerplate, likeBoilerplate, unlikeBoilerplate
+Resolver type: User
+  Fields: boilerplates, likedBoilerplates
+Resolver type: Boilerplate
+  Fields: 
+2025-05-11 04:23:59 [[32minfo[39m]: 🚀 Server ready at http://localhost:4000/graphql 
+2025-05-11 04:23:59 [[32minfo[39m]: Successfully connected to Redis 
+2025-05-11 04:24:03 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:24:03 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:24:03 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:24:03 [[32minfo[39m]: 📥 Request started: anonymous 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Query: query GetAllCategories { categories { id name slug icon color description } } 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Query Hash: 778d9bccac27d4751423a04ce7444597907ef2ad56b9830d09d9467560375454 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:24:03 [[32minfo[39m]: ✅ Operation resolved: query anonymous 
+2025-05-11 04:24:03 [[32minfo[39m]: [Boilerplate Resolver] Fetching all categories 
+2025-05-11 04:24:03 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:24:03 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:24:03 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:24:03 [[32minfo[39m]: 📥 Request started: anonymous 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Query: query GetAllCategories { categories { id name slug icon color description } } 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Query Hash: 778d9bccac27d4751423a04ce7444597907ef2ad56b9830d09d9467560375454 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:24:03 [[32minfo[39m]: ✅ Operation resolved: query anonymous 
+2025-05-11 04:24:03 [[32minfo[39m]: [Boilerplate Resolver] Fetching all categories 
+2025-05-11 04:24:03 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:24:03 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:24:03 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:24:03 [[32minfo[39m]: 📥 Request started: anonymous 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Query: query GetTags { tags { id name } } 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Query Hash: b0901027bf0245688bc73ea04a5ad78dd5159b9750a146502a4dfe9395ede1ac 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:24:03 [[32minfo[39m]: ✅ Operation resolved: query anonymous 
+2025-05-11 04:24:03 [[32minfo[39m]: [Boilerplate Resolver] Fetching tags 
+2025-05-11 04:24:03 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:24:03 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:24:03 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:24:03 [[32minfo[39m]: 📥 Request started: anonymous 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Query: query BloggerPosts($maxResults: Int) { bloggerPosts(maxResults: $maxResults) { posts { title url # content shortDescription thumbnail images { url } author { image { url } displayName } blog { id } id kind published selfLink updated } } } 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Query Hash: 63c3a320afc103c351ca6e17975b689d501fafa2a42fdac5fd8569042ae14294 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Variables: {} 
+2025-05-11 04:24:03 [[32minfo[39m]: ✅ Operation resolved: query anonymous 
+2025-05-11 04:24:03 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:24:03 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:24:03 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:24:03 [[32minfo[39m]: 📥 Request started: anonymous 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Query: mutation RefreshToken { refreshToken { access_token refreshToken user { id email name role } } } 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Query Hash: f3199f1083b1236a36bd49e702a8755182b1636e3c57674a713ba8fd09a76b8f 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:24:03 [[32minfo[39m]: ✅ Operation resolved: mutation anonymous 
+2025-05-11 04:24:03 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:24:03 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:24:03 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:24:03 [[32minfo[39m]: 📥 Request started: anonymous 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Query: query GetTags { tags { id name } } 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Query Hash: b0901027bf0245688bc73ea04a5ad78dd5159b9750a146502a4dfe9395ede1ac 
+2025-05-11 04:24:03 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:24:03 [[32minfo[39m]: ✅ Operation resolved: query anonymous 
+2025-05-11 04:24:03 [[32minfo[39m]: [Boilerplate Resolver] Fetching tags 
+2025-05-11 04:24:03 [[32minfo[39m]: [Boilerplate Resolver] Fetched categories {
+  "count": 44
+}
+2025-05-11 04:24:03 [[32minfo[39m]: [Boilerplate Resolver] Fetched categories {
+  "count": 44
+}
+2025-05-11 04:24:03 [[32minfo[39m]: [Boilerplate Resolver] Fetched tags {
+  "count": 8
+}
+2025-05-11 04:24:03 [[32minfo[39m]: [Boilerplate Resolver] Fetched tags {
+  "count": 8
+}
+2025-05-11 04:24:03 [[32minfo[39m]: Access token refreshed for user add17260-8108-4884-b7fe-5f9286ad14b4 
+BloggerResponse: {"blogresponse":{"kind":"blogger#postList","items":[{"kind":"blogger#post","id":"8725407250479332156","blog":{"id":"3815883352697378296"},"published":"2025-03-10T09:25:00-07:00","updated":"2025-03-10T09:32:47-07:00","url":"http://www.cybertechmind.com/2025/03/postgress-transactions.html","selfLink":"https://www.googleapis.com/blogger/v3/blogs/3815883352697378296/posts/8725407250479332156","title":"How to Handling Transactions in PostgreSQL: BEGIN, COMMIT, ROLLBACK","content":"<h1 id=\"handling-transactions-in-postgresql-a-comprehensive-guide-with-node-js-and-python-examples\" style=\"text-align: left;\"><span style=\"font-family: helvetica; font-weight: normal;\"><span style=\"font-size: large;\">Handling Transactions in PostgreSQL: A Comprehensive Guide with Node.js and Python Examples</span></span></h1>\n<p>PostgreSQL transactions is the backbone of database management. In this tutorial, we are working with transactions using hands-on examples in Node.js and Python, including covering isolation levels and best practices for avoiding common pitfalls. Here you can find how to <a href=\"/2025/02/preventing-sql-injection-in-nodejs-with.html\" target=\"_blank\">prevent SQL injections and write a secure code</a>.</p><p>&nbsp;</p><div style=\"text-align: center;\"><a href=\"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjX-62gZqDt3aVGokZ_DIKvyi-Tejvto-xHmudnMjSbJhf69kH__btJcNnuraT64iJiI6id41b03SW-AcIFHeYj0epdZ9Ix-FDAkvme64Mo7cHaLiLD3AhcNmsD7WWu1jh2wstEeDYV5CIKOsS0l4zm41ZauoroMg4FxVUGcGJkzOQp_c6SVtJgywdyFfE8/s1024/cybertechmind%20postgress%20sql%20transactions.png\" imageanchor=\"1\"><img alt=\"cybertechmind postgress sql\" border=\"0\" data-original-height=\"1024\" data-original-width=\"1024\" src=\"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjX-62gZqDt3aVGokZ_DIKvyi-Tejvto-xHmudnMjSbJhf69kH__btJcNnuraT64iJiI6id41b03SW-AcIFHeYj0epdZ9Ix-FDAkvme64Mo7cHaLiLD3AhcNmsD7WWu1jh2wstEeDYV5CIKOsS0l4zm41ZauoroMg4FxVUGcGJkzOQp_c6SVtJgywdyFfE8/s16000/cybertechmind%20postgress%20sql%20transactions.png\" title=\"postgress sql\" /></a></div><br />&nbsp;<p></p>\n<h2 id=\"introduction-for-the-postgresql-\" style=\"text-align: left;\">Introduction for the PostgreSQL:</h2>\n<p>PostgreSQL, or simply Postgres, is a reliable, open-source relational database management system (RDBMS) that is widely recognized for its reliability, scalability, and extensibility. It is SQL standard compliant but also supports JSON and NoSQL-like features, making it a hybrid database that is perfectly suitable for contemporary applications. Originally developed at Berkeley University, California, PostgreSQL has become one of the leading and most widely used databases with a strong community following and enterprise-class features.</p>\n<h2 id=\"-n-introduction-to-postgresql-transactions-\">Introduction to PostgreSQL Transactions:</h2>\n<p>A PostgreSQL transaction packages several SQL operations as one atomic operation, following ACID principles (Atomicity, Consistency, Isolation, Durability). Transactions commit entirely (COMMIT) or roll back entirely (ROLLBACK), not leaving databases in half-updated states.</p>\n<p>This operation is essential in applications such as financial systems where money is transferred from one account to another and must atomically update sender and receiver accounts.</p><h3 data-pm-slice=\"1 3 []\"><span>Why Are Transactions Important?</span></h3><ul style=\"text-align: left;\"><li style=\"text-align: left;\"><span>Ensure </span><span><b>data integrity</b></span><span> and </span><span><b>consistency</b></span></li><li style=\"text-align: left;\"><span>Prevent </span><span><b>race conditions</b></span><span> in concurrent transactions</span></li><li style=\"text-align: left;\"><span>Avoid </span><span><b>half-completed</b></span><span> database updates</span></li><li style=\"text-align: left;\"><span>Essential for applications like </span><span><b>financial transactions</b></span><span> where atomicity is crucial</span></li></ul><p><br /></p>\n<h2 id=\"transaction-handling-in-node-js-\">Transaction Handling in Node.js:</h2>\n<pre><code class=\"lang-javascript\"><span class=\"hljs-keyword\">import</span> { Pool } <span class=\"hljs-keyword\">from</span> <span class=\"hljs-string\">'pg'</span>;\n<span class=\"hljs-keyword\">const</span> pool = <span class=\"hljs-keyword\">new</span> Pool();\n\n<span class=\"hljs-keyword\">async</span> <span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> <span class=\"hljs-title\">transferFunds</span>(<span class=\"hljs-params\">senderId, receiverId, amount</span>) </span>{\n  <span class=\"hljs-keyword\">const</span> client = <span class=\"hljs-keyword\">await</span> pool.connect();\n  <span class=\"hljs-keyword\">try</span> {\n    <span class=\"hljs-keyword\">await</span> client.query(<span class=\"hljs-string\">'BEGIN'</span>);\n\n    <span class=\"hljs-comment\">// Deduct from sender</span>\n    <span class=\"hljs-keyword\">await</span> client.query(\n      <span class=\"hljs-string\">'UPDATE accounts SET balance = balance - $1 WHERE id = $2'</span>,\n      [amount, senderId]\n    );\n\n    <span class=\"hljs-comment\">// Add to receiver</span>\n    <span class=\"hljs-keyword\">await</span> client.query(\n      <span class=\"hljs-string\">'UPDATE accounts SET balance = balance + $1 WHERE id = $2'</span>,\n      [amount, receiverId]\n    );\n\n    <span class=\"hljs-keyword\">await</span> client.query(<span class=\"hljs-string\">'COMMIT'</span>);\n  } <span class=\"hljs-keyword\">catch</span> (err) {\n    <span class=\"hljs-keyword\">await</span> client.query(<span class=\"hljs-string\">'ROLLBACK'</span>);\n    <span class=\"hljs-keyword\">throw</span> err;\n  } <span class=\"hljs-keyword\">finally</span> {\n    client.release();\n  }\n}</code></pre>\n<h2 id=\"key-considerations\">&nbsp;</h2><h2 id=\"key-considerations\">Key Considerations</h2>\n<ul>\n<li>Connection Isolation: Using pool.query() instead of using a separate client creates separate connections, breaking transaction atomicity</li>\n<li>Error Handling: Always ROLLBACK in catch blocks to prevent hanging \"IDLE in transaction\" states</li>\n<li>Nesting: While PostgreSQL lacks nested transactions, savepoints can create nested rollback points using SAVEPOINT and ROLLBACK TO statements</li>\n</ul>\n<h2 id=\"python-transactions-with-psycopg2\">&nbsp;</h2><h2 id=\"python-transactions-with-psycopg2\">Python Transactions with psycopg2</h2>\n<p>The psycopg2 adapter has explicit commit control and context manager-based transactions. Disabling autocommit (conn.autocommit = False) enables manual transaction control</p>\n<pre><code class=\"lang-javascript\">import psycopg2\n\ndef create_order(customer_id, <span class=\"hljs-keyword\">items</span>):\n    conn = psycopg2.connect(DATABASE_URL)\n    <span class=\"hljs-keyword\">try</span>:\n        <span class=\"hljs-keyword\">with</span> conn.cursor() <span class=\"hljs-keyword\">as</span> cur:\n            cur.execute(<span class=\"hljs-string\">\"BEGIN\"</span>)\n\n            <span class=\"hljs-comment\"># Create order</span>\n            cur.execute(\n                <span class=\"hljs-string\">\"INSERT INTO orders (customer_id) VALUES (%s) RETURNING id\"</span>,\n                (customer_id,)\n            )\n            order_id = cur.fetchone()[<span class=\"hljs-number\">0</span>]\n\n            <span class=\"hljs-comment\"># Add items</span>\n            <span class=\"hljs-keyword\">for</span> <span class=\"hljs-keyword\">item</span> <span class=\"hljs-keyword\">in</span> <span class=\"hljs-keyword\">items</span>:\n                cur.execute(\n                    <span class=\"hljs-string\">\"INSERT INTO order_items (order_id, product_id, quantity) \"</span>\n                    <span class=\"hljs-string\">\"VALUES (%s, %s, %s)\"</span>,\n                    (order_id, <span class=\"hljs-keyword\">item</span>[<span class=\"hljs-string\">'product_id'</span>], <span class=\"hljs-keyword\">item</span>[<span class=\"hljs-string\">'quantity'</span>])\n                )\n\n            conn.commit()\n    except Exception <span class=\"hljs-keyword\">as</span> e:\n        conn.rollback()\n        raise e\n    <span class=\"hljs-keyword\">finally</span>:\n        conn.<span class=\"hljs-built_in\">close</span>()\n</code></pre>\n<p>Context managers simplify this flow since <b>psycopg2 2.5</b>:</p>\n<pre><code class=\"lang-javascript\"><span class=\"hljs-keyword\">with</span> conn:\n    <span class=\"hljs-keyword\">with</span> conn.cursor() <span class=\"hljs-keyword\">as</span> cur:\n        cur.execute(<span class=\"hljs-string\">\"INSERT INTO logs (message) VALUES ('Transaction start')\"</span>)\n        # Additional queries\n# Auto-commits <span class=\"hljs-keyword\">if</span> no exceptions\n</code></pre>\n<h2 id=\"transaction-isolation-level\"><br /></h2><h2 id=\"-n-best-practices-and-common-pitfalls\">Best Practices and Common Pitfalls</h2><div id=\"-n-best-practices-and-common-pitfalls\" style=\"text-align: left;\"><ol style=\"text-align: left;\"><li>&nbsp;<b>Connection Management</b></li><ol><li>Always release connections back to the pool (Node.js) or close them (Python)</li><li>Avoid long-running transactions blocking other operations</li></ol><li><b>Error Handling</b><b>&nbsp;</b></li><ol><li>Implement retry mechanism for serialization failures</li><li>Use savepoints to perform partial rollbacks in compound transactions <br /></li></ol><li><b>Performance Considerations</b></li><ol><li>Keep transactions short to reduce lock contention</li><li>Use <code>RETURNING</code> clause to fetch updated rows within the transaction <br /></li></ol><li><b>Testing Strategies</b><b>&nbsp;</b></li><ol><li>Force rollbacks in test environments to avoid test data persistence</li><li>Test under concurrency using parallel transaction executions <br /></li></ol></ol></div>\n<pre><code class=\"lang-sql\"><span class=\"hljs-comment\">// Node.js example with RETURNING</span>\nawait client.<span class=\"hljs-keyword\">query</span>(\n  '<span class=\"hljs-keyword\">UPDATE</span> inventory <span class=\"hljs-keyword\">SET</span> stock = stock - <span class=\"hljs-variable\">$1</span> WHERE product_id = <span class=\"hljs-variable\">$2</span> RETURNING stock',\n  [quantity, productId]\n);\n<span class=\"hljs-keyword\">const</span> updatedStock = res.rows[0].stock;\n</code></pre>\n<h2 data-pm-slice=\"1 1 []\"><span>&nbsp;</span></h2><h2 data-pm-slice=\"1 1 []\"><span>Preventing SQL Injection in Transactions</span></h2><p><span>SQL injections are a major security threat in database operations. Follow these best practices:</span></p><p><span>✅ </span><span><b>Use parameterized queries</b></span><span> (instead of string concatenation)</span><br /><span>✅ </span><span><b>Sanitize user inputs</b></span><span> before executing queries</span><br /><span>✅ </span><span><b>Use ORM libraries</b></span><span> like Sequelize (Node.js) or SQLAlchemy (Python)</span></p><p><span>Example of safe query execution: <a href=\"/2025/02/preventing-sql-injection-in-nodejs-with.html\">Please check this blog how to prevent sql injections</a></span></p><h2 id=\"advanced-transaction-patterns\">Advanced Transaction Patterns</h2>\n<p><b>Two-Phase Commits (2PC)</b></p>\n<p>For distributed systems coordinating across multiple databases:</p>\n<pre><code class=\"lang-sql\"><span class=\"hljs-keyword\">BEGIN</span>;\n<span class=\"hljs-comment\">-- Perform operations</span>\n<span class=\"hljs-keyword\">PREPARE</span> <span class=\"hljs-keyword\">TRANSACTION</span> <span class=\"hljs-string\">'order_123'</span>;\n<span class=\"hljs-comment\">-- Later</span>\n<span class=\"hljs-keyword\">COMMIT</span> PREPARED <span class=\"hljs-string\">'order_123'</span>;\n</code></pre>\n<p><b>SAVEPOINT Usage</b></p>\n<pre><code class=\"lang-sql\">cur.execute(<span class=\"hljs-string\">\"SAVEPOINT sp1\"</span>)\ntry:\n    cur.execute(<span class=\"hljs-string\">\"<span class=\"hljs-keyword\">DELETE</span> FROM temp_data\"</span>)\nexcept:\n    cur.execute(<span class=\"hljs-string\">\"ROLLBACK TO sp1\"</span>)\n</code></pre>\n<h2 id=\"language-specific-considerations\">&nbsp;</h2><h2 id=\"language-specific-considerations\">Language-Specific Considerations</h2>\n<p><b>Node.js</b></p>\n<ul>\n<li>Use more top-level libraries such as knex or sequelize for ORM-like transactions</li>\n</ul>\n<p><b>Python</b></p>\n<ul>\n<li>SQLAlchemy's session management provides abstraction over raw transactions</li>\n<li>Django ORM handles transactions through decorators like <code>@transaction.atomic</code></li>\n</ul>\n<h2 id=\"monitoring-and-debugging\">&nbsp;</h2><h2 id=\"monitoring-and-debugging\">Monitoring and Debugging</h2>\n<p>Enable logging to analyze transaction behavior:</p>\n<pre><code class=\"lang-sql\">-- postgresql<span class=\"hljs-selector-class\">.conf</span>\nlog_statement = <span class=\"hljs-string\">'all'</span>\nlog_line_prefix = <span class=\"hljs-string\">'%t [%p]: [%c] '</span>\n</code></pre>\n<pre><code class=\"lang-sql\"><span class=\"hljs-keyword\">SELECT</span> pid, <span class=\"hljs-keyword\">now</span>() - xact_start <span class=\"hljs-keyword\">AS</span> <span class=\"hljs-keyword\">duration</span>, <span class=\"hljs-keyword\">query</span> \n<span class=\"hljs-keyword\">FROM</span> pg_stat_activity \n<span class=\"hljs-keyword\">WHERE</span> state <span class=\"hljs-keyword\">IN</span> (<span class=\"hljs-string\">'idle in transaction'</span>, <span class=\"hljs-string\">'active'</span>);\n</code></pre>\n<h2 id=\"conclusion\">&nbsp;</h2><h2 id=\"conclusion\">Conclusion</h2>\n<p>Proper transaction handling is the foundation of consistent PostgreSQL applications. Because of Node.js and Python's control systems, application developers can create robust data operations that are consistent under concurrent use.</p>\n<p>Proper use of isolation levels and monitoring also assist in making the system robust. With increasing applications, database transactions with application-level patterns like compensating transactions or saga patterns are used to ensure consistency of the distributed system.</p>\n","images":[{"url":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjX-62gZqDt3aVGokZ_DIKvyi-Tejvto-xHmudnMjSbJhf69kH__btJcNnuraT64iJiI6id41b03SW-AcIFHeYj0epdZ9Ix-FDAkvme64Mo7cHaLiLD3AhcNmsD7WWu1jh2wstEeDYV5CIKOsS0l4zm41ZauoroMg4FxVUGcGJkzOQp_c6SVtJgywdyFfE8/s16000/cybertechmind%20postgress%20sql%20transactions.png"}],"author":{"id":"06031942721564773121","displayName":"Moovendhan v","url":"https://www.blogger.com/profile/06031942721564773121","image":{"url":"//2.bp.blogspot.com/-jae043gjvYY/Z7Hedg1g7DI/AAAAAAAAFLg/Gi_TZaBSRC0r8pEaChH_BtlThX_OQ90qQCK4BGAYYCw/s35/moovenedhan%252520agricreations%252520image%252520logo.jpg"}},"replies":{"totalItems":"0","selfLink":"https://www.googleapis.com/blogger/v3/blogs/3815883352697378296/posts/8725407250479332156/comments"},"labels":["ACID Compliance","Backend development","DatabaseSecurity","Nodejs","PostgreSQL","SQL Best Practices","SQL Transactions"],"etag":"\"dGltZXN0YW1wOiAxNzQxNjI0MzY3ODM2Cm9mZnNldDogLTI1MjAwMDAwCg\""},{"kind":"blogger#post","id":"9199964233038359097","blog":{"id":"3815883352697378296"},"published":"2025-02-21T18:18:00-08:00","updated":"2025-03-08T17:46:52-08:00","url":"http://www.cybertechmind.com/2025/02/preventing-sql-injection-in-nodejs-with.html","selfLink":"https://www.googleapis.com/blogger/v3/blogs/3815883352697378296/posts/9199964233038359097","title":"Preventing SQL Injection in Node.js with pg and Other Programming Languages","content":"<p><table align=\"center\" cellpadding=\"0\" cellspacing=\"0\" class=\"tr-caption-container\" style=\"margin-left: auto; margin-right: auto;\"><tbody><tr><td style=\"text-align: center;\"><h2 style=\"text-align: left;\">What is sql injections</h2><p style=\"text-align: left;\">SQL injection is one of the most common and very dangerous web application vulnerabilities, staying on top of the <b>OWASP Top 10.</b></p>\n<p style=\"text-align: left;\">This blogs takes to you into some basic technical analysis of SQL \nInjections prevention techniques, focused especially on Node.js \nPostgreSQL (PG) packages.</p>\n<p style=\"text-align: left;\">while casting a wide net around other programming languages. New \ncoding patterns are discussed, from the offensive (inducing \nvulnerabilities) to the defensive (protecting the application), along \nwith advanced architectural controls and testing methodologies. <br /></p><a href=\"https://blogger.googleusercontent.com/img/a/AVvXsEhNLTNLFGYuDEEak7TJWbe1pBIrlvOfV1uHMMkw5WlisSc1x7LSzBAnug1bXhAAgMxH2FysuH8bv4PXi_2ZUlrHmdayRP0J1HC2vQ9YxrfDrxmkja33YYvZkWsT7zZhmMJFL2Co55Oao9qZtthxXeqNPil7VGl517a5AuqAdcsqm4quIqAcVpqrKe4U6LsQ\" style=\"margin-left: auto; margin-right: auto;\"><br /><img alt=\"vulnarable sql injections code\" data-original-height=\"1782\" data-original-width=\"1910\" src=\"https://blogger.googleusercontent.com/img/a/AVvXsEhNLTNLFGYuDEEak7TJWbe1pBIrlvOfV1uHMMkw5WlisSc1x7LSzBAnug1bXhAAgMxH2FysuH8bv4PXi_2ZUlrHmdayRP0J1HC2vQ9YxrfDrxmkja33YYvZkWsT7zZhmMJFL2Co55Oao9qZtthxXeqNPil7VGl517a5AuqAdcsqm4quIqAcVpqrKe4U6LsQ=s16000\" title=\"sql injections vulnarable code\" /></a></td></tr><tr><td class=\"tr-caption\" style=\"text-align: center;\">The vulnerable SQL injections code</td></tr></tbody></table><br /></p><p><i>Our mission is securing the digital world join your hands with us and stay safe in online.</i></p>\n<p><b>SQL Injection Mechanics and Impact</b></p>\n<p>SQL injection arises when unsafe query data are concatenated to SQL queries performing malfunctions to the query logic by an attacker. These gaining unauthorized access to the data to total compromise of a database. These result from two major lapses:</p>\n<ol><li>Failure to check/sanitize user input.</li><li>Unsafe query building: using direct embedding of user input in SQL statements without proper parameterize.</li></ol>\n<p>The current-day database systems such as PostgreSQL do offer a number\nof defense mechanisms; their effectiveness depends on their correct implementation.\n<i>Recent studies show that 42 per cent of web applications still present at least\none SQLi vulnerability</i>, mostly caused by misconfiguration ORM layers or\nimproper use of prepared statements.</p>\n<p>so when you are handling with the sql query please be aware even a single mistake can cause sql injections in you applications</p>\n<h2><b>Offensive and defencive Patterns: Common Vulnerability</b></h2>\n<p><b>Node.js PostgreSQL Anti-Patterns</b></p>\n<h3><b>Unsafe String Concatenation</b></h3>\n<pre><code class=\"language-sql\">// UNSAFE: Direct string interpolation\nconst query = `SELECT * FROM users WHERE email = '${email}'`;\nclient.query(query, (err, res) =&gt; { ... });\n</code></pre>\n<p>Attackers can inject <code>' OR 1=1 --</code> to bypass authentication.</p>\n<p><b>Dangerous Dynamic Schema Handling</b></p>\n<pre><code class=\"language-sql\">// UNSAFE: User-controlled table/column names\nconst orderBy = req.query.sort || 'id';\nconst query = `SELECT * FROM products ORDER BY ${orderBy}`;\n</code></pre>\n<p>Allows injection of subqueries via sort parameters.</p>\n<h2>Cross-Language Vulnerability Examples</h2>\n<h3><b>PHP (PDO Misuse)</b></h3>\n<pre><code class=\"language-php\">// UNSAFE: Placeholder bypass\n$stmt = $pdo-&gt;prepare(\"SELECT * FROM users WHERE id = \" . $_GET['id']);\n$stmt-&gt;execute();\n</code></pre>\n<h3><b>Python (SQLAlchemy Raw SQL)</b></h3>\n<pre><code class=\"language-python\"># UNSAFE: Textual SQL with interpolation\nquery = text(f\"SELECT * FROM orders WHERE status = '{status}'\")\nresult = conn.execute(query)\n</code></pre>\n<h2><b>Defensive Strategies for Node.js PostgreSQL</b></h2>\n<h3><b>1. Parameterized Queries with node-postgres</b></h3>\n<pre><code class=\"language-sql\">// SAFE: Parameterized query\nconst query = 'SELECT * FROM users WHERE email = $1';\nconst values = [email];\nclient.query(query, values, (err, res) =&gt; { ... });\n</code></pre>\n<p><b>Why is this safe?</b> The <code>$1</code> placeholder ensures the input is handled as a string value, preventing SQL injection.\nThe PG driver automatically handles type-safe escaping and prevents query structure alteration.</p>\n<h2><b>2.Leverage Prepared Statements</b></h2>\n<p>Prepared statements enhance security by precompiling SQL statements, ensuring queries remain structured before execution.</p>\n<pre><code class=\"language-js\">async function getUserSecure(email) {\n    const client = await pool.connect();\n    try {\n        const query = {\n            text: 'SELECT * FROM users WHERE email = $1',\n            values: [email],\n        };\n        const result = await client.query(query);\n        return result.rows;\n    } finally {\n        client.release();\n    }\n}\n</code></pre>\n<h3><b>3. Strict Input Validation with Zod</b></h3>\n<pre><code class=\"language-js\">import { z } from 'zod';\n\nconst EmailSchema = z.string().email().max(254);\nconst safeEmail = EmailSchema.parse(rawInput);\n</code></pre>\n<p>Enforces email format and length constraints before query execution.</p>\n<h3><b>4. Query Construction with Knex.js</b></h3>\n<pre><code class=\"language-sql\">const safeQuery = knex('users')\n  .where({\n    email: rawInputEmail,\n    status: 'active'\n  })\n  .orderBy('created_at', 'desc');\n</code></pre>\n<p>Knex generates parameterized SQL while preventing schema injection through object notation.</p>\n<h3>5. Advanced ORM Protection with Sequelize</h3>\n<pre><code class=\"language-js\">const User = sequelize.define('user', { ... });\n\n// SAFE: Model-based querying\nUser.findAll({\n  where: {\n    email: {\n      [Op.eq]: sanitizedEmail\n    }\n  }\n});\n</code></pre>\n<p>Sequelize applies type-aware escaping and supports read-only transactions for additional protection.</p>\n<p><b>Cross-Language Defense Mechanisms</b></p>\n<p><b>PHP: PDO Prepared Statements</b></p>\n<pre><code class=\"language-sql\">$stmt = $pdo-&gt;prepare(\"SELECT * FROM users WHERE id = :id\");\n$stmt-&gt;execute(['id' =&gt; $userId]);\n</code></pre>\n<p><b>Python: SQLAlchemy Core</b></p>\n<pre><code class=\"language-js\">stmt = select([users]).where(users.c.email == bindparam('email'))\nconn.execute(stmt, {'email': validated_email})\n</code></pre>\n<p><b>Universal Best Practices for Prevention of SQL Injection</b></p>\n<ol><li>Across all languages and frameworks, the following best practices must be incorporated so please follow those documentations to implement on you own applicaitons</li><li>Always use parameterized queries or prepared statements this will not attacker to inject the SQL queries on your applications.</li><li>Don't concatenate user input directly into SQL queries, but use some validation tools appropriately, like ZOD for nodejs, to validate every user's input from the payload before an insert/select into the database.</li><li>Don't concatenate user input directly into SQL queries, but use some validation tools appropriately, like ZOD for nodejs, to validate every user's input from the payload before an insert/select into the database.</li><li>Least privilege classes for database users: please create new users and give to them just what they require (do not give delete access so that data loss is avoided unless it is absolutely necessary).</li><li>Monitor database logs for unusual querying styles: Keep the logs updated with daily questioning types so that they are vigilantly checked for the signature of those who use SQL injection techniques against the databases on pseudonyms.</li><li>Update database drivers and application dependencies regularly.</li><li>Deploy Web Application Firewalls (WAF) to filter malicious requests, Create some rules in your firewall to prevent the SQL injections attacks.</li><li>Enforce a rigorous set of validation rules, user zod for nodejs to validate user inputs.</li><li>Encrypt sensitive data to minimize its exposure, encrypt sensitive data in databases so you know that its of super confidential nature to go public like number cards, email, mobile numbers Etc....</li></ol>\n","images":[{"url":"https://blogger.googleusercontent.com/img/a/AVvXsEhNLTNLFGYuDEEak7TJWbe1pBIrlvOfV1uHMMkw5WlisSc1x7LSzBAnug1bXhAAgMxH2FysuH8bv4PXi_2ZUlrHmdayRP0J1HC2vQ9YxrfDrxmkja33YYvZkWsT7zZhmMJFL2Co55Oao9qZtthxXeqNPil7VGl517a5AuqAdcsqm4quIqAcVpqrKe4U6LsQ=s16000"}],"author":{"id":"06031942721564773121","displayName":"Moovendhan v","url":"https://www.blogger.com/profile/06031942721564773121","image":{"url":"//2.bp.blogspot.com/-jae043gjvYY/Z7Hedg1g7DI/AAAAAAAAFLg/Gi_TZaBSRC0r8pEaChH_BtlThX_OQ90qQCK4BGAYYCw/s35/moovenedhan%252520agricreations%252520image%252520logo.jpg"}},"replies":{"totalItems":"0","selfLink":"https://www.googleapis.com/blogger/v3/blogs/3815883352697378296/posts/9199964233038359097/comments"},"labels":["CyberSecurity","DatabaseSecurity","DataProtection","Nodejs","SecureCoding","SQLInjection","WebAppSecurity"],"etag":"\"dGltZXN0YW1wOiAxNzQxNDg0ODEyNzMxCm9mZnNldDogLTI4ODAwMDAwCg\""},{"kind":"blogger#post","id":"2984965739383727418","blog":{"id":"3815883352697378296"},"published":"2025-02-16T04:43:00-08:00","updated":"2025-02-16T04:44:09-08:00","url":"http://www.cybertechmind.com/2025/02/moovendhan-the-cybertechmind.html","selfLink":"https://www.googleapis.com/blogger/v3/blogs/3815883352697378296/posts/2984965739383727418","title":"Who is Moovendhan the cybertechmind","content":"<h2 style=\"text-align: left;\"><b>Who is <a href=\"https://profile.cybertechmind.com\" target=\"_blank\">Moovendhan</a> the Cybertechmind ?</b></h2><h3 style=\"text-align: left;\"><b>why this blog ? </b><br /></h3><p>Welcome! I'm so glad you found my blog!.<br />Here is just some little info about me and the story behind this blog.<br /></p><div style=\"text-align: center;\"><a href=\"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjmRwml96hQcfgMDcZ6mfO3TLreed_7TPDObgiIIEGXzZ9STD6SMSBobj3N4XYFeRV3_01mdt80Ff1Ak6mjp6w4RO1jEvpQ8yPZ58E1M3VjNmBg1BQPIcCyweL6z7kkPdmSqVHKgyhUoOu5UyRMaDIYAOyE-LUeybGasAGXRhjaEMkHOIkNqAlZI0oEtUi9/s2490/IMG20231129165451.jpg\"><img alt=\"Moovendhan the cybertechmind\" border=\"0\" data-original-height=\"2490\" data-original-width=\"2319\" src=\"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjmRwml96hQcfgMDcZ6mfO3TLreed_7TPDObgiIIEGXzZ9STD6SMSBobj3N4XYFeRV3_01mdt80Ff1Ak6mjp6w4RO1jEvpQ8yPZ58E1M3VjNmBg1BQPIcCyweL6z7kkPdmSqVHKgyhUoOu5UyRMaDIYAOyE-LUeybGasAGXRhjaEMkHOIkNqAlZI0oEtUi9/s16000/IMG20231129165451.jpg\" title=\"Moovendhan\" /></a></div><br /><h3 style=\"text-align: left;\"><b>Who is Moovendhan?</b></h3><p><span>&nbsp;&nbsp; <span>&nbsp;&nbsp; &nbsp;</span>I'm Moovendhan, a dedicated web engineer with experience in building and deploying scalable high-performance applications. Combining expertise in AWS, the MERN stack, ShadCN, Bootstrap, Next.js, PostgreSQL, Docker, Prisma, Zustand, PHP, and Laravel, I produce efficient digital solutions.</span></p><p><span><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>During my time at CyberTechMind, I simplified complicated technical concepts, taught about online security, and provided real-life solutions. Basically, my goal is to empower those passionate about technology and innovation through practical knowledge and real-world experience. </span><br /><br /><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>An interesting part of my job is mostly solving tough problems to make them run fast and building tools that help other developers be more productive and efficient in their jobs. But I'm here for more than just that: I like to make the difficult subjects fun and interesting for others.&nbsp;</p><p><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span>Whether it comes to where I'm writing step-by-step directions to get to the bottom of why something is not working or I am explaining how to take things to the next level of security, I just enjoy deconstructing those big concepts and making them easier to understand and implement. The Inspiration Behind This Blog<br /><br /><span>&nbsp;&nbsp; <span>&nbsp;&nbsp; &nbsp;</span>&nbsp;</span>At CyberTechMind, I envision a world advanced by technology but not ruled by it. To break down hard tech ideas into easily digestible formats would help these readers to stay even safer on the Internet. App reviews or Cybersecurity tips will be put here for the geeky minds and innovators who need pragmatic advice and honest recommendations.<br /><br /><b>Core Values</b><br /><b>Knowledge-sharing</b> - Keeping the readers informed with accurate, timely information.<br /><b>User Perspective</b> - Makes every post supportive and relevant.<br /><b>Safety First</b> - Prioritizing secure digital experiences and best practices.<br /><br /><b>What You Can Expect Here</b><br />CyberTechMind is of a multiple form of content to steer you through the cyber-riddles:<br /><b>Tech App Reviews</b> - We warranty the testing of apps on business, entertainment or service premises.<br /><b>Tech Guides </b>- Learn how to road-map trouble-shooting step by step. <br /><br /><br /></p>","images":[{"url":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjmRwml96hQcfgMDcZ6mfO3TLreed_7TPDObgiIIEGXzZ9STD6SMSBobj3N4XYFeRV3_01mdt80Ff1Ak6mjp6w4RO1jEvpQ8yPZ58E1M3VjNmBg1BQPIcCyweL6z7kkPdmSqVHKgyhUoOu5UyRMaDIYAOyE-LUeybGasAGXRhjaEMkHOIkNqAlZI0oEtUi9/s16000/IMG20231129165451.jpg"}],"author":{"id":"06031942721564773121","displayName":"Moovendhan v","url":"https://www.blogger.com/profile/06031942721564773121","image":{"url":"//2.bp.blogspot.com/-jae043gjvYY/Z7Hedg1g7DI/AAAAAAAAFLg/Gi_TZaBSRC0r8pEaChH_BtlThX_OQ90qQCK4BGAYYCw/s35/moovenedhan%252520agricreations%252520image%252520logo.jpg"}},"replies":{"totalItems":"0","selfLink":"https://www.googleapis.com/blogger/v3/blogs/3815883352697378296/posts/2984965739383727418/comments"},"etag":"\"dGltZXN0YW1wOiAxNzM5NzA5ODQ5MzMzCm9mZnNldDogLTI4ODAwMDAwCg\""}],"etag":"\"MjAyNS0wMy0xMFQxNjozMjo0Ny44MzZa\""}}
+2025-05-11 04:26:44 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:26:44 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:26:44 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:26:44 [[32minfo[39m]: 📥 Request started: IntrospectionQuery 
+2025-05-11 04:26:44 [[32minfo[39m]: 🔹 Query: query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args(includeDeprecated: true) { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args(includeDeprecated: true) { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields(includeDeprecated: true) { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue isDeprecated deprecationReason } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } } 
+2025-05-11 04:26:44 [[32minfo[39m]: 🔹 Query Hash: f18627a65dd8b5ac9daa5c29e8f88448e0cd7126b72bf0aed7309c34e953e953 
+2025-05-11 04:26:44 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:26:44 [[32minfo[39m]: ✅ Operation resolved: query IntrospectionQuery 
+2025-05-11 04:26:49 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:26:49 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:26:49 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:26:49 [[32minfo[39m]: 📥 Request started: IntrospectionQuery 
+2025-05-11 04:26:49 [[32minfo[39m]: 🔹 Query: query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args(includeDeprecated: true) { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args(includeDeprecated: true) { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields(includeDeprecated: true) { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue isDeprecated deprecationReason } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } } 
+2025-05-11 04:26:49 [[32minfo[39m]: 🔹 Query Hash: f18627a65dd8b5ac9daa5c29e8f88448e0cd7126b72bf0aed7309c34e953e953 
+2025-05-11 04:26:49 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:26:49 [[32minfo[39m]: ✅ Operation resolved: query IntrospectionQuery 
+2025-05-11 04:26:54 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:26:54 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:26:54 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:26:54 [[32minfo[39m]: 📥 Request started: IntrospectionQuery 
+2025-05-11 04:26:54 [[32minfo[39m]: 🔹 Query: query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args(includeDeprecated: true) { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args(includeDeprecated: true) { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields(includeDeprecated: true) { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue isDeprecated deprecationReason } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } } 
+2025-05-11 04:26:54 [[32minfo[39m]: 🔹 Query Hash: f18627a65dd8b5ac9daa5c29e8f88448e0cd7126b72bf0aed7309c34e953e953 
+2025-05-11 04:26:54 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:26:54 [[32minfo[39m]: ✅ Operation resolved: query IntrospectionQuery 
+2025-05-11 04:26:59 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:26:59 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:26:59 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:26:59 [[32minfo[39m]: 📥 Request started: IntrospectionQuery 
+2025-05-11 04:26:59 [[32minfo[39m]: 🔹 Query: query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args(includeDeprecated: true) { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args(includeDeprecated: true) { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields(includeDeprecated: true) { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue isDeprecated deprecationReason } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } } 
+2025-05-11 04:26:59 [[32minfo[39m]: 🔹 Query Hash: f18627a65dd8b5ac9daa5c29e8f88448e0cd7126b72bf0aed7309c34e953e953 
+2025-05-11 04:26:59 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:26:59 [[32minfo[39m]: ✅ Operation resolved: query IntrospectionQuery 
+2025-05-11 04:27:00 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:27:00 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:27:03 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:27:03 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:27:03 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:27:03 [[32minfo[39m]: 📥 Request started: IntrospectionQuery 
+2025-05-11 04:27:03 [[32minfo[39m]: 🔹 Query: query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } } 
+2025-05-11 04:27:03 [[32minfo[39m]: 🔹 Query Hash: b4f715835785d583f3668d41b5a37d8fb22c6a35131e57a88bcb151b65c6d57b 
+2025-05-11 04:27:03 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:27:03 [[32minfo[39m]: ✅ Operation resolved: query IntrospectionQuery 
+2025-05-11 04:27:08 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:27:08 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:27:08 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:27:08 [[32minfo[39m]: 📥 Request started: IntrospectionQuery 
+2025-05-11 04:27:08 [[32minfo[39m]: 🔹 Query: query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args(includeDeprecated: true) { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args(includeDeprecated: true) { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields(includeDeprecated: true) { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue isDeprecated deprecationReason } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } } 
+2025-05-11 04:27:08 [[32minfo[39m]: 🔹 Query Hash: f18627a65dd8b5ac9daa5c29e8f88448e0cd7126b72bf0aed7309c34e953e953 
+2025-05-11 04:27:08 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:27:08 [[32minfo[39m]: ✅ Operation resolved: query IntrospectionQuery 
+2025-05-11 04:27:13 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:27:13 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:27:13 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:27:13 [[32minfo[39m]: 📥 Request started: IntrospectionQuery 
+2025-05-11 04:27:13 [[32minfo[39m]: 🔹 Query: query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args(includeDeprecated: true) { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args(includeDeprecated: true) { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields(includeDeprecated: true) { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue isDeprecated deprecationReason } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } } 
+2025-05-11 04:27:13 [[32minfo[39m]: 🔹 Query Hash: f18627a65dd8b5ac9daa5c29e8f88448e0cd7126b72bf0aed7309c34e953e953 
+2025-05-11 04:27:13 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:27:13 [[32minfo[39m]: ✅ Operation resolved: query IntrospectionQuery 
+2025-05-11 04:27:18 [[32minfo[39m]: [Auth Middleware] Authentication attempt {
+  "hasAuthHeader": false
+}
+2025-05-11 04:27:18 [[32minfo[39m]: [Auth Middleware] No authorization header - passing through 
+2025-05-11 04:27:18 [[32minfo[39m]: [GraphQL] Request context created {
+  "user": "anonymous",
+  "hasToken": false
+}
+2025-05-11 04:27:18 [[32minfo[39m]: 📥 Request started: IntrospectionQuery 
+2025-05-11 04:27:18 [[32minfo[39m]: 🔹 Query: query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args(includeDeprecated: true) { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args(includeDeprecated: true) { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields(includeDeprecated: true) { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue isDeprecated deprecationReason } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } } } 
+2025-05-11 04:27:18 [[32minfo[39m]: 🔹 Query Hash: f18627a65dd8b5ac9daa5c29e8f88448e0cd7126b72bf0aed7309c34e953e953 
+2025-05-11 04:27:18 [[32minfo[39m]: 🔹 Variables: undefined 
+2025-05-11 04:27:18 [[32minfo[39m]: ✅ Operation resolved: query IntrospectionQuery 
