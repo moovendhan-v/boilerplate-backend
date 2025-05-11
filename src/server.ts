@@ -61,9 +61,15 @@ async function startServer() {
   const app = express();
   const httpServer = createServer(app);
 
+  const allowedOrigins = [
+    process.env.CLIENT_URL || "http://localhost:8080",
+    "http://localhost:8080",
+    "http://[::1]:8080"
+  ];
+
   // Define the CORS options once
   const corsOptions = {
-    origin: process.env.CLIENT_URL || "http://localhost:8080",
+    origin: allowedOrigins,
     credentials: true,
     methods: ["POST", "GET", "OPTIONS", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization", "Apollo-Require-Preflight"]
