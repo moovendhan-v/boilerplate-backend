@@ -66,6 +66,7 @@ async function startServer() {
   const allowedOrigins = [
     process.env.CLIENT_URL || "http://localhost:8080",
     "http://localhost:8080",
+    "http://localhost:8081",
     "http://[::1]:8080"
   ];
 

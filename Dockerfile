@@ -33,4 +33,5 @@ COPY . .
 EXPOSE 4000
 
 # Keep the container running in detached mode (or adjust as needed)
-CMD ["tail", "-f", "/dev/null"]
+# CMD ["tail", "-f", "/dev/null"]
+CMD [ "npm", "run", "dev" ]
