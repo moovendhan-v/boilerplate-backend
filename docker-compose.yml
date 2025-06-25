@@ -58,6 +58,20 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    expose:
+      - "4000"  # internal only — Nginx will reverse proxy to it
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./config:/etc/nginx/conf.d:ro
+    depends_on:
+      - api
+    networks:
+      - app-network
+    restart: unless-stopped
 
 networks:
   app-network:

@@ -64,15 +64,20 @@ async function startServer() {
   const httpServer = createServer(app);
 
   const allowedOrigins = [
-    process.env.CLIENT_URL || "http://localhost:8080",
-    "http://localhost:8080",
-    "http://localhost:8081",
-    "http://[::1]:8080"
+    /^https?:\/\/localhost(:\d+)?$/,
+    /^https?:\/\/[a-zA-Z0-9.-]*cybertechmind\.com(:\d+)?$/
   ];
 
   // Define the CORS options once
   const corsOptions = {
-    origin: allowedOrigins,
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.some(pattern => typeof pattern === 'string' ? pattern === origin : pattern.test(origin))) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     methods: ["POST", "GET", "OPTIONS", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization", "Apollo-Require-Preflight"]

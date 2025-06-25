@@ -26,6 +26,9 @@ RUN npm install
 # Copy the rest of the source code
 COPY . .
 
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+
 # Build the TypeScript project (optional if you're using TypeScript)
 # RUN npm run build
 
@@ -34,4 +37,5 @@ EXPOSE 4000
 
 # Keep the container running in detached mode (or adjust as needed)
 # CMD ["tail", "-f", "/dev/null"]
-CMD [ "npm", "run", "dev" ]
+# CMD [ "npm", "run", "dev" ]
+CMD ["./entrypoint.sh"]
